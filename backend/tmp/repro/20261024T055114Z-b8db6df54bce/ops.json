@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "ops": [
+    {
+      "op": "box",
+      "id": "box_0",
+      "dx": 40,
+      "dy": 40,
+      "dz": 40,
+      "origin": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "op": "cylinder",
+      "id": "cylinder_1",
+      "h": 50,
+      "origin": [
+        20,
+        20,
+        -5
+      ],
+      "r": 8
+    },
+    {
+      "op": "subtract",
+      "id": "subtract_2",
+      "of": "box_0",
+      "tool": "cylinder_1"
+    }
+  ]
+}

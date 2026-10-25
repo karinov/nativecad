@@ -1,0 +1,124 @@
+{
+  "ticket": "CADSF-1071",
+  "ts": "2026-10-24T06:32:07.330Z",
+  "fingerprint": "b88dffca5642",
+  "source": "tool",
+  "sourceContext": {
+    "origin": "test-suite",
+    "label": "mcp-harness",
+    "declared": true,
+    "declaredOrigin": null
+  },
+  "signature": {
+    "source": "tool",
+    "tool": "cad_batch",
+    "op": null,
+    "code": "E_GEOMETRY",
+    "reasonCode": null
+  },
+  "message": "ops[0] (cad_draft) failed: ops[20] (draft): draft: edge #12363 of face #13676 is CIRCLE — v1 drafts straight-edged solids only — on the sharp solid under the fillet network (tangent propagation through 4 fillet network(s) after: draft: edge #11752 of face #12019 is CIRCLE — v1 drafts straight-edged solids only)",
+  "details": {
+    "failedIndex": 0,
+    "failedTool": "cad_draft",
+    "error": {
+      "code": "E_GEOMETRY",
+      "message": "ops[20] (draft): draft: edge #12363 of face #13676 is CIRCLE — v1 drafts straight-edged solids only — on the sharp solid under the fillet network (tangent propagation through 4 fillet network(s) after: draft: edge #11752 of face #12019 is CIRCLE — v1 drafts straight-edged solids only)",
+      "hint": "Adjust the arguments named in the message and retry — an identical call will fail identically.",
+      "recoverable": true,
+      "details": {
+        "op": "draft",
+        "document": "637c116b_doc_2",
+        "args": {
+          "op": "draft",
+          "id": "draft_20",
+          "angle": 0.017453293,
+          "faces": [
+            "#11995",
+            "#12002",
+            "#12076",
+            "#12083"
+          ],
+          "neutral": {
+            "normal": [
+              0,
+              0,
+              1
+            ],
+            "origin": [
+              0,
+              0,
+              23
+            ]
+          },
+          "of": "draft_19"
+        },
+        "kernelError": "ops[20] (draft): draft: edge #12363 of face #13676 is CIRCLE — v1 drafts straight-edged solids only — on the sharp solid under the fillet network (tangent propagation through 4 fillet network(s) after: draft: edge #11752 of face #12019 is CIRCLE — v1 drafts straight-edged solids only)",
+        "provenBy": "kernel-worker",
+        "report": {
+          "reasonCode": "draft-edge-not-linear",
+          "state": "error"
+        },
+        "documentRolledBack": true,
+        "keptFailed": false,
+        "reasonCode": "draft-edge-not-linear",
+        "reportBug": {
+          "tool": "cad_report_bug",
+          "args": {
+            "title": "cad_draft refused: ops[20] (draft): draft: edge #12363 of face #13676 is CIRCLE — v1 drafts straight-edged solids only — on the sharp solid under the fillet ne…",
+            "description": "cad_draft returned E_GEOMETRY (draft-edge-not-linear) on input I expected to work. Not in the capability-gap register. EDIT: say what you were building and why this should succeed.",
+            "tool": "cad_draft",
+            "severity": "major",
+            "steps": "Call cad_draft with {\"angle\":0.017453293,\"faces\":[\"#11995\",\"#12002\",\"#12076\",\"#12083\"],\"neutral\":{\"normal\":[0,0,1],\"origin\":[0,0,23]},\"of\":\"637c116b_solid_30\"}. EDIT: the handle ids above are session-local — say how those bodies were built.",
+            "expected": "EDIT: what a mainstream CAD kernel would produce for this input.",
+            "actual": "E_GEOMETRY: ops[20] (draft): draft: edge #12363 of face #13676 is CIRCLE — v1 drafts straight-edged solids only — on the sharp solid under the fillet network (tangent propagation through 4 fillet network(s) after: draft: edge #11752 of face #12019 is CIRCLE — v1 drafts straight-edged solids only)"
+          }
+        }
+      },
+      "tool": "cad_draft"
+    },
+    "handles": {},
+    "ops": [
+      {
+        "index": 0,
+        "tool": "cad_draft",
+        "ok": false,
+        "handle": null
+      },
+      {
+        "index": 1,
+        "tool": "cad_draft",
+        "ok": false,
+        "handle": null
+      }
+    ],
+    "reportBug": {
+      "tool": "cad_report_bug",
+      "args": {
+        "title": "cad_batch refused: ops[0] (cad_draft) failed: ops[20] (draft): draft: edge #12363 of face #13676 is CIRCLE — v1 drafts straight-edged solids only — on the shar…",
+        "description": "cad_batch returned E_GEOMETRY on input I expected to work. Not in the capability-gap register. EDIT: say what you were building and why this should succeed.",
+        "tool": "cad_batch",
+        "severity": "major",
+        "steps": "Call cad_batch with {\"stopOnError\":false,\"result\":\"compact\",\"ops\":[{\"tool\":\"cad_draft\",\"as\":\"lidP\",\"args\":{\"angle\":0.017453293,\"faces\":[\"#11995\",\"#12002\",\"#12076\",\"#12083\"],\"neutral\":{\"normal\":[0,0,1],\"origin\":[0,0,23]},\"of\":\"637c116b_solid_30\"}},{\"tool\":\"cad_draft\",\"as\":\"lidR\",\"args\":{\"angle\":0.017453293,\"faces\":[{\"all\":true,\"radius\":{\"max\":1.8,\"min\":1.6},\"surface\":\"cylinder\"},{\"all\":true,\"radius\":{\"max\":3.1,\"min\":2.9},\"surface\":\"cylinder\"}],\"neutral\":{\"normal\":[0,0,1],\"origin\":[0,0,23]},\"of\":\"$lidP.handle\"}}]}. EDIT: the handle ids above are session-local — say how those bodies were built.",
+        "expected": "EDIT: what a mainstream CAD kernel would produce for this input.",
+        "actual": "E_GEOMETRY: ops[0] (cad_draft) failed: ops[20] (draft): draft: edge #12363 of face #13676 is CIRCLE — v1 drafts straight-edged solids only — on the sharp solid under the fillet network (tangent propagation through 4 fillet network(s) after: draft: edge #11752 of face #12019 is CIRCLE — v1 drafts straight-edged solids only)"
+      }
+    }
+  },
+  "geometry": "body.step",
+  "journal": {
+    "ops": 20,
+    "minimizedTo": 20
+  },
+  "minimized": {
+    "before": 20,
+    "after": 20,
+    "tests": 0,
+    "baselineMs": 0,
+    "skipped": "the failing call itself took 4492 ms, more than the whole 3000 ms reduction budget (CADSOLVER_REPRO_BUDGET_MS) — a baseline replay could only conclude \"unaffordable\" after paying for it on the protocol thread; dumped unminimised (CADSB-1326)"
+  },
+  "replay": {
+    "tool": "node tools/op_replay.js <dir>",
+    "cli": "node cli.js --run ops.json"
+  },
+  "privacy": "local only — this dump is never uploaded; see this module's header and docs/TELEMETRY.md"
+}

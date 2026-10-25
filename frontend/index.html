@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OptiPrime NativeCAD AI Studio — Parametric STEP & STL Engine</title>
+  <meta name="description" content="Generate parametric solid B-rep CAD models, mechanical assemblies, and production-ready STEP/STL files from text prompts.">
+  <meta name="theme-color" content="#000000">
+  <link rel="icon" type="image/png" href="/img/icon.png">
+  <link rel="apple-touch-icon" href="/img/icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&family=Inter:opsz,wght@14..32,100..900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/nativecad/styles.css?v=2026102502">
+</head>
+<body>
+
+  <!-- Login Modal Overlay -->
+  <div id="login-modal" class="login-overlay">
+    <div class="login-card">
+      <div class="corner c1"></div>
+      <div class="corner c2"></div>
+      <div class="corner c3"></div>
+      <div class="corner c4"></div>
+
+      <div class="login-header">
+        <div class="brand-row">
+          <img src="/img/logo.png" alt="OptiPrime" />
+          <span class="brand-title-login">OptiPrime</span>
+          <span class="brand-badge">PORTAL 02</span>
+        </div>
+        <h1 class="login-heading">NativeCAD Studio</h1>
+        <p class="login-desc">Sign in to orchestrate parametric STEP/STL generation and AI B-rep modeling.</p>
+      </div>
+
+      <div id="login-error" class="login-error"></div>
+
+      <form id="login-form">
+        <div class="form-group">
+          <label class="form-label" for="login-username">Username</label>
+          <input type="text" id="login-username" class="form-input" placeholder="admin" value="admin" required autocomplete="username">
+        </div>
+        <div class="form-group" style="margin-bottom: 24px;">
+          <label class="form-label" for="login-password">Password</label>
+          <input type="password" id="login-password" class="form-input" placeholder="••••••••••••" value="challengedriven" required autocomplete="current-password">
+        </div>
+        <button type="submit" id="btn-do-login" class="login-btn">
+          <span>Sign In to Studio</span>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 8h10M9 4l4 4-4 4"/>
+          </svg>
+        </button>
+      </form>
+
+      <div class="login-footer">
+        <span>SINGLE-USER WORKSPACE</span>
+        <span>MINIMAX M3.1</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header Navbar -->
+  <header>
+    <div class="brand-wrapper">
+      <a href="https://optiprime.appz.se/" class="portal-return-link">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10 13L5 8l5-5"/>
+        </svg>
+        <span>optiprime.appz.se</span>
+      </a>
+
+      <div class="brand">
+        <img src="/img/logo.png" alt="OptiPrime" class="brand-logo" />
+        <span class="brand-title">OptiPrime</span>
+        <span class="brand-badge">PORTAL 02</span>
+      </div>
+    </div>
+
+    <div class="header-status">
+      <div id="status-badge" class="status-chip online">
+        <span class="dot"></span>
+        <span id="status-text">CAD Studio Online</span>
+      </div>
+      <div class="badge-tag">
+        <span>MINIMAX M3.1</span>
+      </div>
+      <button id="btn-logout" class="btn btn-ghost btn-sm" title="Sign Out">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+          <polyline points="16 17 21 12 16 7"></polyline>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+        <span>Sign Out</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile Segmented Switcher (Visible on mobile screens <= 860px) -->
+  <div class="mobile-switcher" id="mobile-switcher">
+    <button class="mobile-switcher-tab active" data-tab="chat">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+      <span>AI Studio</span>
+    </button>
+    <button class="mobile-switcher-tab" data-tab="preview">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+      </svg>
+      <span>3D CAD & Files</span>
+    </button>
+  </div>
+
+  <!-- Main Container: Split Workspace -->
+  <div class="app-container">
+    
+    <!-- Left: Prompt & Synthesis Panel -->
+    <div class="chat-panel mobile-active">
+      
+      <div class="chat-panel-header">
+        <div class="chat-panel-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+          <span>CAD Agent Conversation</span>
+        </div>
+        <span class="badge-tag">B-REP SYNTHESIS</span>
+      </div>
+
+      <!-- Messages List -->
+      <div id="chat-messages" class="chat-messages">
+        <!-- Welcome Greeting -->
+        <div class="message-wrapper assistant">
+          <div class="avatar ai-avatar">OP</div>
+          <div class="message-bubble">
+            <strong>Hello! I am your NativeCAD AI Engineering Assistant.</strong><br>
+            I can generate parametric solid B-rep CAD models, boolean operations, bolt patterns, fillets, and export directly to <strong>STEP and STL</strong> formats.<br><br>
+            What mechanical part would you like to design today?
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Prompt Chips -->
+      <div class="quick-prompts">
+        <div class="prompt-chip" data-prompt="Create a cube 40x40x40 mm with a centered through cylinder hole diameter 16 mm, then export to STEP and STL">Cube Ø16 mm Hole</div>
+        <div class="prompt-chip" data-prompt="Design a standard spur gear with module 2.0, 24 teeth, face width 12 mm, and 10 mm bore">Spur Gear Mod 2.0</div>
+        <div class="prompt-chip" data-prompt="Create an aluminium L-bracket 60x40x5 mm with two M6 bolt holes on the base and 3 mm fillet">L-Bracket M6</div>
+        <div class="prompt-chip" data-prompt="Design an electronics sensor enclosure 80x50x25 mm with 2.5 mm wall thickness and 4 M3 corner bosses">Sensor Enclosure</div>
+      </div>
+
+      <!-- Chat Input Area -->
+      <div class="chat-input-area">
+        <textarea id="chat-input" class="chat-input" placeholder="Describe the 3D CAD model or STEP/STL you want to generate... (Press Enter to send)" rows="1"></textarea>
+        <button id="btn-send" class="send-btn" title="Send Prompt">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 8h10M9 4l4 4-4 4"/>
+          </svg>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Right: 3D Viewport & Asset Library -->
+    <div class="preview-panel">
+      
+      <!-- Toolbar -->
+      <div class="preview-toolbar">
+        <div class="tab-group">
+          <button id="tab-3d" class="tab-btn active">3D Viewport</button>
+          <button id="tab-assets" class="tab-btn">Generated CAD Files (<span id="asset-count">0</span>)</button>
+        </div>
+
+        <div class="toolbar-controls" id="canvas-controls">
+          <button id="btn-fit" class="tool-icon-btn" title="Reset Camera / Fit View">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+            </svg>
+          </button>
+          <button id="btn-wireframe" class="tool-icon-btn" title="Toggle Wireframe">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              <line x1="3" y1="9" x2="21" y2="9"/>
+              <line x1="3" y1="15" x2="21" y2="15"/>
+              <line x1="9" y1="3" x2="9" y2="21"/>
+              <line x1="15" y1="3" x2="15" y2="21"/>
+            </svg>
+          </button>
+          <button id="btn-grid" class="tool-icon-btn active" title="Toggle Reference Grid">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="12" y1="3" x2="12" y2="21"></line>
+            </svg>
+          </button>
+          <button id="btn-color" class="tool-icon-btn" title="Cycle Material Color">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="9"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- 3D Viewport View -->
+      <div id="view-3d-container" class="viewport-container">
+        <canvas id="threejs-canvas"></canvas>
+
+        <div id="viewport-empty" class="viewport-empty">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#7089ba" stroke-width="1.5">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+            <line x1="12" y1="22.08" x2="12" y2="12"/>
+          </svg>
+          <div>
+            <strong>No active 3D CAD model</strong><br>
+            <span style="font-size: 0.82rem; font-family: var(--font-mono); color: var(--color-steel);">Use the prompt panel on the left to design, or select an asset from "Generated CAD Files".</span>
+          </div>
+        </div>
+
+        <div id="viewport-info" class="viewport-overlay-info" style="display: none;">
+          <div>MODEL: <strong id="model-name-label">-</strong></div>
+          <div style="font-size: 0.72rem; margin-top: 3px; color: var(--color-steel);">
+            <span id="model-stats-triangles">0 Triangles</span> &bull; 
+            <span id="model-stats-dim">Dim: -</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Assets & Downloads View -->
+      <div id="view-assets-container" class="assets-view">
+        <div class="assets-view-header">
+          <div class="assets-view-title">Generated CAD Models & Drawings</div>
+          <button id="btn-refresh-assets" class="btn btn-secondary btn-sm">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <polyline points="1 20 1 14 7 14"></polyline>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+            <span>Refresh Files</span>
+          </button>
+        </div>
+        <div id="assets-grid" class="assets-grid">
+          <!-- Filled dynamically by app.js -->
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Three.js Dependencies (Local files) -->
+  <script src="libs/three.min.js"></script>
+  <script src="libs/OrbitControls.js"></script>
+  <script src="libs/STLLoader.js"></script>
+  <!-- Application Script -->
+  <script src="app.js?v=2026102502"></script>
+
+</body>
+</html>

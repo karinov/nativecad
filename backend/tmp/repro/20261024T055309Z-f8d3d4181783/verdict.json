@@ -1,0 +1,38 @@
+{
+  "ticket": "CADSF-1071",
+  "ts": "2026-10-24T05:53:09.530Z",
+  "fingerprint": "f8d3d4181783",
+  "source": "tool",
+  "sourceContext": {
+    "origin": "test-suite",
+    "label": "mcp-harness",
+    "declared": true,
+    "declaredOrigin": null
+  },
+  "signature": {
+    "source": "tool",
+    "tool": "cad_export_body",
+    "op": null,
+    "code": "E_NOT_FOUND",
+    "reasonCode": null
+  },
+  "message": "No tessellation handle \"8e138820_solid_3\" (it may have expired, been evicted, or belong to a different server process).",
+  "details": null,
+  "geometry": "body.step",
+  "journal": {
+    "ops": 3,
+    "minimizedTo": 3
+  },
+  "minimized": {
+    "before": 3,
+    "after": 3,
+    "tests": 0,
+    "baselineMs": 0,
+    "skipped": "robustness/triage/minimize.js is not reachable from this install (MODULE_NOT_FOUND) — dumped unminimised"
+  },
+  "replay": {
+    "tool": "node tools/op_replay.js <dir>",
+    "cli": "node cli.js --run ops.json"
+  },
+  "privacy": "local only — this dump is never uploaded; see this module's header and docs/TELEMETRY.md"
+}

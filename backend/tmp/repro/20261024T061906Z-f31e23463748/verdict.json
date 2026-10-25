@@ -1,0 +1,141 @@
+{
+  "ticket": "CADSF-1071",
+  "ts": "2026-10-24T06:19:08.081Z",
+  "fingerprint": "f31e23463748",
+  "source": "tool",
+  "sourceContext": {
+    "origin": "test-suite",
+    "label": "mcp-harness",
+    "declared": true,
+    "declaredOrigin": null
+  },
+  "signature": {
+    "source": "tool",
+    "tool": "cad_chamfer_edges",
+    "op": "chamfer",
+    "code": "E_GEOMETRY",
+    "reasonCode": null
+  },
+  "message": "ops[17] (chamfer): chamferCircularRim: edge #10939 is bounded by #11094 (PLANE) and #11429 (CONICAL_SURFACE) — the circular-rim chamfer only handles a PLANE against a coaxial CYLINDRICAL_SURFACE (bevelling a rim whose curved support is a CONICAL_SURFACE is separate work)",
+  "details": {
+    "op": "chamfer",
+    "document": "637c116b_doc_2",
+    "args": {
+      "op": "chamfer",
+      "id": "chamfer_17",
+      "distance": 0.5,
+      "edges": {
+        "curve": "circle",
+        "radius": {
+          "min": 3.4,
+          "max": 3.6
+        },
+        "all": true
+      },
+      "of": "blend_16"
+    },
+    "kernelError": "ops[17] (chamfer): chamferCircularRim: edge #10939 is bounded by #11094 (PLANE) and #11429 (CONICAL_SURFACE) — the circular-rim chamfer only handles a PLANE against a coaxial CYLINDRICAL_SURFACE (bevelling a rim whose curved support is a CONICAL_SURFACE is separate work)",
+    "provenBy": "kernel-worker",
+    "report": {
+      "selectors": [
+        {
+          "field": "edges",
+          "index": 0,
+          "selector": {
+            "curve": "circle",
+            "radius": {
+              "min": 3.4,
+              "max": 3.6
+            },
+            "all": true
+          },
+          "resolved": [
+            "#10939",
+            "#10940",
+            "#10945",
+            "#10946",
+            "#10951",
+            "#10952",
+            "#10957",
+            "#10958"
+          ],
+          "count": 8
+        }
+      ],
+      "edgeReport": [
+        {
+          "edgeId": "#10939",
+          "status": "skipped",
+          "reason": "chamferCircularRim: edge #10939 is bounded by #11094 (PLANE) and #11429 (CONICAL_SURFACE) — the circular-rim chamfer only handles a PLANE against a coaxial CYLINDRICAL_SURFACE (bevelling a rim whose curved support is a CONICAL_SURFACE is separate work)"
+        },
+        {
+          "edgeId": "#10940",
+          "status": "skipped",
+          "reason": "blocked — #10939 failed: chamferCircularRim: edge #10939 is bounded by #11094 (PLANE) and #11429 (CONICAL_SURFACE) — the circular-rim chamfer only handles a PLANE against a coaxial CYLINDRICAL_SURFACE (bevelling a rim whose curved support is a CONICAL_SURFACE is separate work)"
+        },
+        {
+          "edgeId": "#10945",
+          "status": "skipped",
+          "reason": "blocked — #10939 failed: chamferCircularRim: edge #10939 is bounded by #11094 (PLANE) and #11429 (CONICAL_SURFACE) — the circular-rim chamfer only handles a PLANE against a coaxial CYLINDRICAL_SURFACE (bevelling a rim whose curved support is a CONICAL_SURFACE is separate work)"
+        },
+        {
+          "edgeId": "#10946",
+          "status": "skipped",
+          "reason": "blocked — #10939 failed: chamferCircularRim: edge #10939 is bounded by #11094 (PLANE) and #11429 (CONICAL_SURFACE) — the circular-rim chamfer only handles a PLANE against a coaxial CYLINDRICAL_SURFACE (bevelling a rim whose curved support is a CONICAL_SURFACE is separate work)"
+        },
+        {
+          "edgeId": "#10951",
+          "status": "skipped",
+          "reason": "blocked — #10939 failed: chamferCircularRim: edge #10939 is bounded by #11094 (PLANE) and #11429 (CONICAL_SURFACE) — the circular-rim chamfer only handles a PLANE against a coaxial CYLINDRICAL_SURFACE (bevelling a rim whose curved support is a CONICAL_SURFACE is separate work)"
+        },
+        {
+          "edgeId": "#10952",
+          "status": "skipped",
+          "reason": "blocked — #10939 failed: chamferCircularRim: edge #10939 is bounded by #11094 (PLANE) and #11429 (CONICAL_SURFACE) — the circular-rim chamfer only handles a PLANE against a coaxial CYLINDRICAL_SURFACE (bevelling a rim whose curved support is a CONICAL_SURFACE is separate work)"
+        },
+        {
+          "edgeId": "#10957",
+          "status": "skipped",
+          "reason": "blocked — #10939 failed: chamferCircularRim: edge #10939 is bounded by #11094 (PLANE) and #11429 (CONICAL_SURFACE) — the circular-rim chamfer only handles a PLANE against a coaxial CYLINDRICAL_SURFACE (bevelling a rim whose curved support is a CONICAL_SURFACE is separate work)"
+        },
+        {
+          "edgeId": "#10958",
+          "status": "skipped",
+          "reason": "blocked — #10939 failed: chamferCircularRim: edge #10939 is bounded by #11094 (PLANE) and #11429 (CONICAL_SURFACE) — the circular-rim chamfer only handles a PLANE against a coaxial CYLINDRICAL_SURFACE (bevelling a rim whose curved support is a CONICAL_SURFACE is separate work)"
+        }
+      ],
+      "state": "error"
+    },
+    "documentRolledBack": true,
+    "keptFailed": false,
+    "reportBug": {
+      "tool": "cad_report_bug",
+      "args": {
+        "title": "cad_chamfer_edges refused: ops[17] (chamfer): chamferCircularRim: edge #10939 is bounded by #11094 (PLANE) and #11429 (CONICAL_SURFACE) — the circular-rim cham…",
+        "description": "cad_chamfer_edges returned E_GEOMETRY on input I expected to work. Not in the capability-gap register. EDIT: say what you were building and why this should succeed.",
+        "tool": "cad_chamfer_edges",
+        "severity": "major",
+        "steps": "Call cad_chamfer_edges with {\"distance\":0.5,\"edges\":{\"curve\":\"circle\",\"radius\":{\"min\":3.4,\"max\":3.6},\"all\":true},\"of\":\"637c116b_solid_27\"}. EDIT: the handle ids above are session-local — say how those bodies were built.",
+        "expected": "EDIT: what a mainstream CAD kernel would produce for this input.",
+        "actual": "E_GEOMETRY: ops[17] (chamfer): chamferCircularRim: edge #10939 is bounded by #11094 (PLANE) and #11429 (CONICAL_SURFACE) — the circular-rim chamfer only handles a PLANE against a coaxial CYLINDRICAL_SURFACE (bevelling a rim whose curved support is a CONICAL_SURFACE is separate work)"
+      }
+    }
+  },
+  "geometry": null,
+  "journal": {
+    "ops": 17,
+    "minimizedTo": 17
+  },
+  "minimized": {
+    "before": 17,
+    "after": 17,
+    "tests": 0,
+    "baselineMs": 0,
+    "skipped": "robustness/triage/minimize.js is not reachable from this install (MODULE_NOT_FOUND) — dumped unminimised"
+  },
+  "replay": {
+    "tool": "node tools/op_replay.js <dir>",
+    "cli": "node cli.js --run ops.json"
+  },
+  "privacy": "local only — this dump is never uploaded; see this module's header and docs/TELEMETRY.md"
+}

@@ -1,0 +1,95 @@
+{
+  "ticket": "CADSF-1071",
+  "ts": "2026-10-24T06:28:20.423Z",
+  "fingerprint": "e30070571f0f",
+  "source": "tool",
+  "sourceContext": {
+    "origin": "test-suite",
+    "label": "mcp-harness",
+    "declared": true,
+    "declaredOrigin": null
+  },
+  "signature": {
+    "source": "tool",
+    "tool": "cad_draft",
+    "op": "draft",
+    "code": "E_GEOMETRY",
+    "reasonCode": "draft-edge-not-linear"
+  },
+  "message": "ops[20] (draft): draft: edge #11363 of face #11707 is CIRCLE — v1 drafts straight-edged solids only — on the sharp solid under the fillet network (tangent propagation through 4 fillet network(s) after: draft: edge #10855 of face #10989 is CIRCLE — v1 drafts straight-edged solids only)",
+  "details": {
+    "op": "draft",
+    "document": "637c116b_doc_2",
+    "args": {
+      "op": "draft",
+      "id": "draft_20",
+      "angle": 0.0174533,
+      "faces": [
+        "#11010",
+        "#11017",
+        "#10996",
+        "#11003",
+        "#11061",
+        "#11068",
+        "#11047",
+        "#11054"
+      ],
+      "neutral": {
+        "normal": [
+          0,
+          0,
+          1
+        ],
+        "origin": [
+          40,
+          25,
+          25
+        ]
+      },
+      "of": "blend_16",
+      "pull": [
+        0,
+        0,
+        1
+      ]
+    },
+    "kernelError": "ops[20] (draft): draft: edge #11363 of face #11707 is CIRCLE — v1 drafts straight-edged solids only — on the sharp solid under the fillet network (tangent propagation through 4 fillet network(s) after: draft: edge #10855 of face #10989 is CIRCLE — v1 drafts straight-edged solids only)",
+    "provenBy": "kernel-worker",
+    "report": {
+      "reasonCode": "draft-edge-not-linear",
+      "state": "error"
+    },
+    "documentRolledBack": true,
+    "keptFailed": false,
+    "reasonCode": "draft-edge-not-linear",
+    "reportBug": {
+      "tool": "cad_report_bug",
+      "args": {
+        "title": "cad_draft refused: ops[20] (draft): draft: edge #11363 of face #11707 is CIRCLE — v1 drafts straight-edged solids only — on the sharp solid under the fillet ne…",
+        "description": "cad_draft returned E_GEOMETRY (draft-edge-not-linear) on input I expected to work. Not in the capability-gap register. EDIT: say what you were building and why this should succeed.",
+        "tool": "cad_draft",
+        "severity": "major",
+        "steps": "Call cad_draft with {\"angle\":0.0174533,\"faces\":[\"#11010\",\"#11017\",\"#10996\",\"#11003\",\"#11061\",\"#11068\",\"#11047\",\"#11054\"],\"neutral\":{\"normal\":[0,0,1],\"origin\":[40,25,25]},\"of\":\"637c116b_solid_27\",\"pull\":[0,0,1]}. EDIT: the handle ids above are session-local — say how those bodies were built.",
+        "expected": "EDIT: what a mainstream CAD kernel would produce for this input.",
+        "actual": "E_GEOMETRY: ops[20] (draft): draft: edge #11363 of face #11707 is CIRCLE — v1 drafts straight-edged solids only — on the sharp solid under the fillet network (tangent propagation through 4 fillet network(s) after: draft: edge #10855 of face #10989 is CIRCLE — v1 drafts straight-edged solids only)"
+      }
+    }
+  },
+  "geometry": "body.step",
+  "journal": {
+    "ops": 20,
+    "minimizedTo": 20
+  },
+  "minimized": {
+    "before": 20,
+    "after": 20,
+    "tests": 0,
+    "baselineMs": 0,
+    "skipped": "robustness/triage/minimize.js is not reachable from this install (MODULE_NOT_FOUND) — dumped unminimised"
+  },
+  "replay": {
+    "tool": "node tools/op_replay.js <dir>",
+    "cli": "node cli.js --run ops.json"
+  },
+  "privacy": "local only — this dump is never uploaded; see this module's header and docs/TELEMETRY.md"
+}

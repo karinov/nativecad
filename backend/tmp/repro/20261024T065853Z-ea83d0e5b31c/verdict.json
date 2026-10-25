@@ -1,0 +1,73 @@
+{
+  "ticket": "CADSF-1071",
+  "ts": "2026-10-24T06:59:08.705Z",
+  "fingerprint": "ea83d0e5b31c",
+  "source": "tool",
+  "sourceContext": {
+    "origin": "test-suite",
+    "label": "mcp-harness",
+    "declared": true,
+    "declaredOrigin": null
+  },
+  "signature": {
+    "source": "tool",
+    "tool": "cad_shell",
+    "op": "shell",
+    "code": "E_TIMEOUT",
+    "reasonCode": "shell-budget-exceeded"
+  },
+  "message": "\"shell\" was cancelled after exceeding its time budget: ops[1] (shell): shell: the budget ran out in phase 'min-wall-scan' after 35336ms of a 20000ms budget — shelling this body needs more work than the caller allowed. Raise opts.budgetMs (0 disables the budget), simplify the body, or shell fewer faces.",
+  "details": {
+    "op": "shell",
+    "document": "637c116b_doc_3",
+    "args": {
+      "op": "shell",
+      "id": "shell_1",
+      "of": "box_0",
+      "open": {
+        "normal": [
+          0,
+          0,
+          1
+        ]
+      },
+      "thickness": 2.5
+    },
+    "reasonCode": "shell-budget-exceeded",
+    "budgetMs": null,
+    "elapsedMs": null,
+    "phase": null,
+    "documentRolledBack": true,
+    "sessionSurvives": true,
+    "kernelError": "ops[1] (shell): shell: the budget ran out in phase 'min-wall-scan' after 35336ms of a 20000ms budget — shelling this body needs more work than the caller allowed. Raise opts.budgetMs (0 disables the budget), simplify the body, or shell fewer faces.",
+    "reportBug": {
+      "tool": "cad_report_bug",
+      "args": {
+        "title": "cad_shell refused: \"shell\" was cancelled after exceeding its time budget: ops[1] (shell): shell: the budget ran out in phase 'min-wall-scan' after 35336ms of a…",
+        "description": "cad_shell returned E_TIMEOUT (shell-budget-exceeded) on input I expected to work. Not in the capability-gap register. EDIT: say what you were building and why this should succeed.",
+        "tool": "cad_shell",
+        "severity": "major",
+        "steps": "Call cad_shell with {\"of\":\"637c116b_solid_31\",\"open\":{\"normal\":[0,0,1]},\"thickness\":2.5}. EDIT: the handle ids above are session-local — say how those bodies were built.",
+        "expected": "EDIT: what a mainstream CAD kernel would produce for this input.",
+        "actual": "E_TIMEOUT: \"shell\" was cancelled after exceeding its time budget: ops[1] (shell): shell: the budget ran out in phase 'min-wall-scan' after 35336ms of a 20000ms budget — shelling this body needs more work than the caller allowed. Raise opts.budgetMs (0 disables the budget), simplify the body, or shell fewer faces."
+      }
+    }
+  },
+  "geometry": "body.step",
+  "journal": {
+    "ops": 1,
+    "minimizedTo": 1
+  },
+  "minimized": {
+    "before": 1,
+    "after": 1,
+    "tests": 0,
+    "baselineMs": 0,
+    "skipped": null
+  },
+  "replay": {
+    "tool": "node tools/op_replay.js <dir>",
+    "cli": "node cli.js --run ops.json"
+  },
+  "privacy": "local only — this dump is never uploaded; see this module's header and docs/TELEMETRY.md"
+}

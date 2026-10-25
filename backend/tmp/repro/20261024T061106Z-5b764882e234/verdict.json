@@ -1,0 +1,68 @@
+{
+  "ticket": "CADSF-1071",
+  "ts": "2026-10-24T06:11:06.683Z",
+  "fingerprint": "5b764882e234",
+  "source": "tool",
+  "sourceContext": {
+    "origin": "test-suite",
+    "label": "mcp-harness",
+    "declared": true,
+    "declaredOrigin": null
+  },
+  "signature": {
+    "source": "tool",
+    "tool": "cad_boolean_union",
+    "op": "union",
+    "code": "E_GEOMETRY",
+    "reasonCode": "volume_not_conserved"
+  },
+  "message": "ops[10] (union): union: the general engine's result is not volume-conserving — it returned 12651.840 mm^3 for the union of a 12534.800 mm^3 base and a 119.280 mm^3 tool — within noise of their disjoint sum (12654.080 mm^3) — yet 50.0% of sampled tool-interior points lie strictly inside the base, proving the two operands share substantial volume. A ∪ B of solids that overlap must be measurably less than vol(A) + vol(B); this result added the whole tool with no trim (CADSB-570) — the answer is watertight but wrong, and is refused rather than published (CADSB-503). The fast path declined first with: union: tool surface crosses base face #2539 near [77.300, 3.800, 23.000] through coincident mesh vertices/edges (no proper triangle hit sees it), which is not one of the pierced planes — the tool meets the base outside the faces this fast path rebuilds (unsupported overlap pattern)",
+  "details": {
+    "op": "union",
+    "document": "637c116b_doc_1",
+    "args": {
+      "op": "union",
+      "id": "union_10",
+      "of": "box_5",
+      "tool": [
+        "box_6",
+        "box_7",
+        "box_8",
+        "box_9"
+      ]
+    },
+    "kernelError": "ops[10] (union): union: the general engine's result is not volume-conserving — it returned 12651.840 mm^3 for the union of a 12534.800 mm^3 base and a 119.280 mm^3 tool — within noise of their disjoint sum (12654.080 mm^3) — yet 50.0% of sampled tool-interior points lie strictly inside the base, proving the two operands share substantial volume. A ∪ B of solids that overlap must be measurably less than vol(A) + vol(B); this result added the whole tool with no trim (CADSB-570) — the answer is watertight but wrong, and is refused rather than published (CADSB-503). The fast path declined first with: union: tool surface crosses base face #2539 near [77.300, 3.800, 23.000] through coincident mesh vertices/edges (no proper triangle hit sees it), which is not one of the pierced planes — the tool meets the base outside the faces this fast path rebuilds (unsupported overlap pattern)",
+    "provenBy": "kernel-worker",
+    "report": {
+      "reasonCode": "volume_not_conserved",
+      "state": "error"
+    },
+    "documentRolledBack": true,
+    "keptFailed": false,
+    "reasonCode": "volume_not_conserved",
+    "knownGap": {
+      "gapId": "boolean-face-coincident-union",
+      "source": "gap-registry",
+      "title": "Union of face-coincident wall plates is refused volume_not_conserved / \"tool does not pierce\"",
+      "status": "open",
+      "ticket": "CADSB-717"
+    }
+  },
+  "geometry": null,
+  "journal": {
+    "ops": 10,
+    "minimizedTo": 10
+  },
+  "minimized": {
+    "before": 10,
+    "after": 10,
+    "tests": 0,
+    "baselineMs": 0,
+    "skipped": "robustness/triage/minimize.js is not reachable from this install (MODULE_NOT_FOUND) — dumped unminimised"
+  },
+  "replay": {
+    "tool": "node tools/op_replay.js <dir>",
+    "cli": "node cli.js --run ops.json"
+  },
+  "privacy": "local only — this dump is never uploaded; see this module's header and docs/TELEMETRY.md"
+}

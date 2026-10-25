@@ -1,0 +1,58 @@
+{
+  "ticket": "CADSF-1071",
+  "ts": "2026-10-24T05:51:14.925Z",
+  "fingerprint": "b8db6df54bce",
+  "source": "tool",
+  "sourceContext": {
+    "origin": "test-suite",
+    "label": "mcp-harness",
+    "declared": true,
+    "declaredOrigin": null
+  },
+  "signature": {
+    "source": "tool",
+    "tool": "cad_export_body",
+    "op": null,
+    "code": "E_LICENSE_REQUIRED",
+    "reasonCode": "license-key-required"
+  },
+  "message": "cad_export_body requires a NativeCAD licence key — this server is running unlicensed. An unlicensed server models, measures and checks freely; what it will not do is put the geometry anywhere you keep it (export, save/restore, import, mesh payloads, quoting).",
+  "details": {
+    "registerUrl": "https://featureboard.ai/register?source=nativecad",
+    "evalHint": "modelling, query, DFM and cad_evaluate all work without a key — only taking the geometry off this machine needs one",
+    "tier": "unlicensed",
+    "deniedWithoutKey": [
+      "cad_export_body",
+      "cad_save",
+      "cad_restore",
+      "cad_versions",
+      "cad_import",
+      "cad_assembly_import",
+      "cad_mesh_to_brep",
+      "cad_mesh_payload",
+      "cad_quote_payload",
+      "cad_quote_submit",
+      "cad_pcb"
+    ],
+    "activateWith": "cad_license({action:\"activate\", key:\"CSLV1-…\"})",
+    "contestHint": "cad_contest start with a contest ticket opens the modelling tools for a contest build",
+    "reasonCode": "license-key-required"
+  },
+  "geometry": null,
+  "journal": {
+    "ops": 3,
+    "minimizedTo": 3
+  },
+  "minimized": {
+    "before": 3,
+    "after": 3,
+    "tests": 0,
+    "baselineMs": 0,
+    "skipped": "robustness/triage/minimize.js is not reachable from this install (MODULE_NOT_FOUND) — dumped unminimised"
+  },
+  "replay": {
+    "tool": "node tools/op_replay.js <dir>",
+    "cli": "node cli.js --run ops.json"
+  },
+  "privacy": "local only — this dump is never uploaded; see this module's header and docs/TELEMETRY.md"
+}

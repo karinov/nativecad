@@ -1,0 +1,118 @@
+{
+  "ticket": "CADSF-1071",
+  "ts": "2026-10-24T07:21:06.671Z",
+  "fingerprint": "f92204976e31",
+  "source": "tool",
+  "sourceContext": {
+    "origin": "test-suite",
+    "label": "mcp-harness",
+    "declared": true,
+    "declaredOrigin": null
+  },
+  "signature": {
+    "source": "tool",
+    "tool": "cad_batch",
+    "op": null,
+    "code": "E_TIMEOUT",
+    "reasonCode": null
+  },
+  "message": "This batch ran out of time after ops[6]: 7 of 9 ops completed in 2020006 ms of a 1800000 ms ceiling, so ops[7..8] were not started.",
+  "details": {
+    "reason": "batch-time-budget-exceeded",
+    "timedOutIndex": 7,
+    "completed": 7,
+    "total": 9,
+    "elapsedMs": 2020006,
+    "timeoutMs": 1800000,
+    "refusedIndex": null,
+    "remaining": [
+      {
+        "index": 7,
+        "tool": "cad_boolean_union"
+      },
+      {
+        "index": 8,
+        "tool": "cad_hole_pattern"
+      }
+    ],
+    "sessionSurvives": true,
+    "handles": {
+      "$f1": "637c116b_solid_32",
+      "$f2": "637c116b_solid_33",
+      "$f3": "637c116b_solid_34"
+    },
+    "ops": [
+      {
+        "index": 0,
+        "tool": "cad_shell",
+        "ok": false,
+        "handle": null
+      },
+      {
+        "index": 1,
+        "tool": "cad_draft",
+        "ok": false,
+        "handle": null
+      },
+      {
+        "index": 2,
+        "tool": "cad_fillet_edges",
+        "ok": false,
+        "handle": null
+      },
+      {
+        "index": 3,
+        "tool": "cad_frustum",
+        "ok": true,
+        "handle": "637c116b_solid_32"
+      },
+      {
+        "index": 4,
+        "tool": "cad_frustum",
+        "ok": true,
+        "handle": "637c116b_solid_33"
+      },
+      {
+        "index": 5,
+        "tool": "cad_frustum",
+        "ok": true,
+        "handle": "637c116b_solid_34"
+      },
+      {
+        "index": 6,
+        "tool": "cad_frustum",
+        "ok": false,
+        "handle": null
+      }
+    ],
+    "reportBug": {
+      "tool": "cad_report_bug",
+      "args": {
+        "title": "cad_batch refused: This batch ran out of time after ops[6]: 7 of 9 ops completed in 2020006 ms of a 1800000 ms ceiling, so ops[7..8] were not started.",
+        "description": "cad_batch returned E_TIMEOUT on input I expected to work. Not in the capability-gap register. EDIT: say what you were building and why this should succeed.",
+        "tool": "cad_batch",
+        "severity": "major",
+        "steps": "Call cad_batch with {\"stopOnError\":false,\"result\":\"compact\",\"ops\":[{\"tool\":\"cad_shell\",\"as\":\"shl\",\"args\":{\"of\":\"637c116b_solid_31\",\"open\":{\"normal\":[0,0,1]},\"thickness\":2.5}},{\"tool\":\"cad_draft\",\"as\":\"shlD\",\"args\":{\"angle\":0.0174533,\"faces\":[{\"at\":[80,25,12.5],\"normal\":[1,0,0]},{\"at\":[0,25,12.5],\"normal\":[-1,0,0]},{\"at\":[40,50,12.5],\"normal\":[0,1,0]},{\"at\":[40,0,12.5],\"normal\":[0,-1,0]},{\"at\":[2.5,25,13.75],\"normal\":[1,0,0]},{\"at\":[77.5,25,13.75],\"normal\":[-1,0,0]},{\"at\":[40,47.5,13.75],\"normal\":[0,1,0]},{\"at\":[40,2.5,13.75],\"normal\":[0,-1,0]}],\"neutral\":{\"normal\":[0,0,1],\"origin\":[40,25,25]},\"of\":\"$shl.handle\",\"pull\":[0,0,1]}},{\"tool\":\"cad_fillet_edges\",\"as\":\"baseC\",\"args\":{\"edges\":[{\"curve\":\"line\",\"extreme\":{\"direction\":[1,1,0],\"pick\":\"max\"}},{\"curve\":\"line\",\"extreme\":{\"direction\":[-1,1,0],\"pick\":\"max\"}},{\"curve\":\"line\",\"extreme\":{\"direction\":[-1,-1,0],\"pick\":\"max\"}},{\"curve\":\"line\",\"extreme\":{\"direction\":[1,-1,0],\"pick\":\"max\"}}],\"of\":\"$shlD.handle\",\"radius\":3}},{\"tool\":\"cad_frustum\",\"as\":\"f1\",\"args\":{\"h\":19.7,\"origin\":[9,9,2.3],\"r0\":3.75,\"r1\":3.5}},{\"tool\":\"cad_frustum\",\"as\":\"f2\",\"args\":{\"h\":19.7,\"origin\":[71,9,2.3],\"r0\":3.75,\"r1\":3.5}},{\"tool\":\"cad_frustum\",\"as\":\"f3\",\"args\":{\"h\":19.7,\"origin\":[9,41,2.3],\"r0\":3.75,\"r1\":3.5}},{\"tool\":\"cad_frustum\",\"as\":\"f4\",\"args\":{\"h\":19.7,\"origin\":[71,41,2.3],\"r0\":3.75,\"r1\":3.5}},{\"tool\":\"cad_boolean_union\",\"as\":\"base\",\"args\":{\"of\":\"$baseC.handle\",\"tool\":[\"$f1.handle\",\"$f2.handle\",\"$f3.handle\",\"$f4.handle\"]}},{\"tool\":\"cad_hole_pattern\",\"as\":\"baseD\",\"args\":{\"depth\":6,\"diameter\":2.5,\"of\":\"$base.handle\",\"pattern\":{\"kind\":\"points\",\"points\":[[9,9],[71,9],[9,41],[71,41]]},\"tip\":false,\"type\":\"drill\"}}]}. EDIT: the handle ids above are session-local — say how those bodies were built.",
+        "expected": "EDIT: what a mainstream CAD kernel would produce for this input.",
+        "actual": "E_TIMEOUT: This batch ran out of time after ops[6]: 7 of 9 ops completed in 2020006 ms of a 1800000 ms ceiling, so ops[7..8] were not started."
+      }
+    }
+  },
+  "geometry": null,
+  "journal": {
+    "ops": 4,
+    "minimizedTo": 4
+  },
+  "minimized": {
+    "before": 4,
+    "after": 4,
+    "tests": 0,
+    "baselineMs": 0,
+    "skipped": "the refusal is E_TIMEOUT — a resource failure, not a geometric one; a replay here would reproduce the cost on the protocol thread rather than a refusal, so the journal is dumped unminimised (CADSB-1326)"
+  },
+  "replay": {
+    "tool": "node tools/op_replay.js <dir>",
+    "cli": "node cli.js --run ops.json"
+  },
+  "privacy": "local only — this dump is never uploaded; see this module's header and docs/TELEMETRY.md"
+}

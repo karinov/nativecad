@@ -1,0 +1,504 @@
+{
+  "version": 1,
+  "ops": [
+    {
+      "op": "box",
+      "id": "box_0",
+      "dx": 80,
+      "dy": 50,
+      "dz": 25,
+      "origin": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "op": "shell",
+      "id": "shell_1",
+      "of": "box_0",
+      "thickness": 2.5,
+      "open": {
+        "normal": [
+          0,
+          0,
+          1
+        ]
+      }
+    },
+    {
+      "op": "frustum",
+      "id": "frustum_2",
+      "h": 19.7,
+      "origin": [
+        9,
+        9,
+        2.3
+      ],
+      "r0": 3.75,
+      "r1": 3.5
+    },
+    {
+      "op": "frustum",
+      "id": "frustum_3",
+      "h": 19.7,
+      "origin": [
+        71,
+        9,
+        2.3
+      ],
+      "r0": 3.75,
+      "r1": 3.5
+    },
+    {
+      "op": "frustum",
+      "id": "frustum_4",
+      "h": 19.7,
+      "origin": [
+        9,
+        41,
+        2.3
+      ],
+      "r0": 3.75,
+      "r1": 3.5
+    },
+    {
+      "op": "frustum",
+      "id": "frustum_5",
+      "h": 19.7,
+      "origin": [
+        71,
+        41,
+        2.3
+      ],
+      "r0": 3.75,
+      "r1": 3.5
+    },
+    {
+      "op": "union",
+      "id": "union_6",
+      "of": "shell_1",
+      "tool": [
+        "frustum_2",
+        "frustum_3",
+        "frustum_4",
+        "frustum_5"
+      ]
+    },
+    {
+      "op": "hole_pattern",
+      "id": "hole_pattern_7",
+      "depth": 6,
+      "diameter": 2.5,
+      "of": "union_6",
+      "pattern": {
+        "kind": "points",
+        "points": [
+          [
+            9,
+            9
+          ],
+          [
+            71,
+            9
+          ],
+          [
+            9,
+            41
+          ],
+          [
+            71,
+            41
+          ]
+        ]
+      },
+      "tip": false,
+      "type": "drill"
+    },
+    {
+      "op": "box",
+      "id": "box_8",
+      "dx": 80,
+      "dy": 50,
+      "dz": 3,
+      "origin": [
+        0,
+        0,
+        25
+      ]
+    },
+    {
+      "op": "box",
+      "id": "box_9",
+      "dx": 74.6,
+      "dy": 1.4,
+      "dz": 2.5,
+      "origin": [
+        2.7,
+        2.7,
+        23
+      ]
+    },
+    {
+      "op": "box",
+      "id": "box_10",
+      "dx": 74.6,
+      "dy": 1.4,
+      "dz": 2.5,
+      "origin": [
+        2.7,
+        45.9,
+        23
+      ]
+    },
+    {
+      "op": "box",
+      "id": "box_11",
+      "dx": 1.4,
+      "dy": 42.6,
+      "dz": 2.5,
+      "origin": [
+        2.7,
+        3.8,
+        23
+      ]
+    },
+    {
+      "op": "box",
+      "id": "box_12",
+      "dx": 1.4,
+      "dy": 42.6,
+      "dz": 2.5,
+      "origin": [
+        75.9,
+        3.8,
+        23
+      ]
+    },
+    {
+      "op": "union",
+      "id": "union_13",
+      "of": "box_8",
+      "tool": [
+        "box_9",
+        "box_10",
+        "box_11",
+        "box_12"
+      ]
+    },
+    {
+      "op": "hole_pattern",
+      "id": "hole_pattern_14",
+      "diameter": 3.4,
+      "of": "union_13",
+      "pattern": {
+        "kind": "points",
+        "points": [
+          [
+            9,
+            9
+          ],
+          [
+            71,
+            9
+          ],
+          [
+            9,
+            41
+          ],
+          [
+            71,
+            41
+          ]
+        ]
+      },
+      "through": true,
+      "type": "drill"
+    },
+    {
+      "op": "blend",
+      "id": "blend_15",
+      "edges": [
+        {
+          "at": [
+            0,
+            0,
+            12.5
+          ],
+          "curve": "line"
+        },
+        {
+          "at": [
+            80,
+            0,
+            12.5
+          ],
+          "curve": "line"
+        },
+        {
+          "at": [
+            0,
+            50,
+            12.5
+          ],
+          "curve": "line"
+        },
+        {
+          "at": [
+            80,
+            50,
+            12.5
+          ],
+          "curve": "line"
+        }
+      ],
+      "of": "hole_pattern_7",
+      "radius": 3
+    },
+    {
+      "op": "blend",
+      "id": "blend_16",
+      "edges": {
+        "curve": "circle",
+        "radius": {
+          "min": 3.7,
+          "max": 3.79
+        },
+        "all": true
+      },
+      "of": "blend_15",
+      "radius": 1.5
+    },
+    {
+      "op": "blend",
+      "id": "blend_17",
+      "edges": [
+        {
+          "at": [
+            0,
+            0,
+            26.5
+          ],
+          "curve": "line"
+        },
+        {
+          "at": [
+            80,
+            0,
+            26.5
+          ],
+          "curve": "line"
+        },
+        {
+          "at": [
+            0,
+            50,
+            26.5
+          ],
+          "curve": "line"
+        },
+        {
+          "at": [
+            80,
+            50,
+            26.5
+          ],
+          "curve": "line"
+        }
+      ],
+      "of": "hole_pattern_14",
+      "radius": 3
+    },
+    {
+      "op": "chamfer",
+      "id": "chamfer_18",
+      "distance": 0.5,
+      "edges": {
+        "all": true,
+        "curve": "circle",
+        "radius": {
+          "max": 1.8,
+          "min": 1.6
+        }
+      },
+      "of": "blend_17"
+    },
+    {
+      "op": "draft",
+      "id": "draft_19",
+      "angle": 0.0174533,
+      "faces": [
+        {
+          "bbox": {
+            "max": [
+              2.9,
+              47.5,
+              25
+            ],
+            "min": [
+              2.5,
+              2.5,
+              23
+            ]
+          },
+          "normal": [
+            -1,
+            0,
+            0
+          ]
+        },
+        {
+          "bbox": {
+            "max": [
+              77.5,
+              47.5,
+              25
+            ],
+            "min": [
+              77.1,
+              2.5,
+              23
+            ]
+          },
+          "normal": [
+            1,
+            0,
+            0
+          ]
+        },
+        {
+          "bbox": {
+            "max": [
+              77.5,
+              2.9,
+              25
+            ],
+            "min": [
+              2.5,
+              2.5,
+              23
+            ]
+          },
+          "normal": [
+            0,
+            -1,
+            0
+          ]
+        },
+        {
+          "bbox": {
+            "max": [
+              77.5,
+              47.5,
+              25
+            ],
+            "min": [
+              2.5,
+              47.1,
+              23
+            ]
+          },
+          "normal": [
+            0,
+            1,
+            0
+          ]
+        },
+        {
+          "bbox": {
+            "max": [
+              4.2,
+              46,
+              25
+            ],
+            "min": [
+              4,
+              4,
+              23
+            ]
+          },
+          "normal": [
+            1,
+            0,
+            0
+          ]
+        },
+        {
+          "bbox": {
+            "max": [
+              76,
+              46,
+              25
+            ],
+            "min": [
+              75.8,
+              4,
+              23
+            ]
+          },
+          "normal": [
+            -1,
+            0,
+            0
+          ]
+        },
+        {
+          "bbox": {
+            "max": [
+              76,
+              4.2,
+              25
+            ],
+            "min": [
+              4,
+              4,
+              23
+            ]
+          },
+          "normal": [
+            0,
+            1,
+            0
+          ]
+        },
+        {
+          "bbox": {
+            "max": [
+              76,
+              46,
+              25
+            ],
+            "min": [
+              4,
+              45.8,
+              23
+            ]
+          },
+          "normal": [
+            0,
+            -1,
+            0
+          ]
+        }
+      ],
+      "neutral": {
+        "normal": [
+          0,
+          0,
+          1
+        ],
+        "origin": [
+          40,
+          25,
+          25
+        ]
+      },
+      "of": "chamfer_18",
+      "pull": [
+        0,
+        0,
+        1
+      ]
+    }
+  ]
+}

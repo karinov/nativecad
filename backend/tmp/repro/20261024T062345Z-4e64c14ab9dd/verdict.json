@@ -1,0 +1,239 @@
+{
+  "ticket": "CADSF-1071",
+  "ts": "2026-10-24T06:23:45.324Z",
+  "fingerprint": "4e64c14ab9dd",
+  "source": "tool",
+  "sourceContext": {
+    "origin": "test-suite",
+    "label": "mcp-harness",
+    "declared": true,
+    "declaredOrigin": null
+  },
+  "signature": {
+    "source": "tool",
+    "tool": "cad_draft",
+    "op": "draft",
+    "code": "E_GEOMETRY",
+    "reasonCode": "selector-no-match"
+  },
+  "message": "ops[18].faces this face selector matched NOTHING on a body with 43 face(s). Clause exclusions: normal rejected 41, bbox rejected 42. Closest candidates: #11003 (PLANE n=[0, 1, 0] at [40, 50, 12.5] area 1850) [1/2 clauses]; #11047 (PLANE n=[0, 1, 0] at [40, 2.5, 13.75] area 1687.5) [1/2 clauses]; #11054 (PLANE n=[0, -1, 0] at [40, 47.5, 13.75] area 1687.5) [1/2 clauses]; #10784 (CYLINDRICAL_SURFACE r=3 at [1.5, 1.5, 12.5] area 106.066~) [0/2 clauses]; #10826 (CYLINDRICAL_SURFACE r=3 at [78.5, 1.5, 12.5] area 106.066~) [0/2 clauses]; #10868 (CYLINDRICAL_SURFACE r=3 at [1.5, 48.5, 12.5] area 106.066~) [0/2 clauses]; #10910 (CYLINDRICAL_SURFACE r=3 at [78.5, 48.5, 12.5] area 106.066~) [0/2 clauses]; #10989 (PLANE n=[0, 0, -1] at [40, 25, 0] area 3982) [0/2 clauses]. A selector that matches nothing is refused rather than treated as an empty selection, because an empty selection builds a body the document did not ask for and reports success.",
+  "details": {
+    "op": "draft",
+    "document": "637c116b_doc_2",
+    "args": {
+      "op": "draft",
+      "id": "draft_18",
+      "angle": 0.0174533,
+      "faces": [
+        {
+          "bbox": {
+            "max": [
+              80.5,
+              50,
+              25
+            ],
+            "min": [
+              79.5,
+              0,
+              0
+            ]
+          },
+          "normal": [
+            1,
+            0,
+            0
+          ]
+        },
+        {
+          "bbox": {
+            "max": [
+              0.5,
+              50,
+              25
+            ],
+            "min": [
+              -0.5,
+              0,
+              0
+            ]
+          },
+          "normal": [
+            -1,
+            0,
+            0
+          ]
+        },
+        {
+          "bbox": {
+            "max": [
+              80,
+              50.5,
+              25
+            ],
+            "min": [
+              0,
+              49.5,
+              0
+            ]
+          },
+          "normal": [
+            0,
+            1,
+            0
+          ]
+        },
+        {
+          "bbox": {
+            "max": [
+              80,
+              0.5,
+              25
+            ],
+            "min": [
+              0,
+              -0.5,
+              0
+            ]
+          },
+          "normal": [
+            0,
+            -1,
+            0
+          ]
+        },
+        {
+          "bbox": {
+            "max": [
+              3,
+              47.5,
+              25
+            ],
+            "min": [
+              2,
+              2.5,
+              2.5
+            ]
+          },
+          "normal": [
+            1,
+            0,
+            0
+          ]
+        },
+        {
+          "bbox": {
+            "max": [
+              78,
+              47.5,
+              25
+            ],
+            "min": [
+              77,
+              2.5,
+              2.5
+            ]
+          },
+          "normal": [
+            -1,
+            0,
+            0
+          ]
+        },
+        {
+          "bbox": {
+            "max": [
+              77.5,
+              48,
+              25
+            ],
+            "min": [
+              2.5,
+              47,
+              2.5
+            ]
+          },
+          "normal": [
+            0,
+            1,
+            0
+          ]
+        },
+        {
+          "bbox": {
+            "max": [
+              77.5,
+              3,
+              25
+            ],
+            "min": [
+              2.5,
+              2,
+              2.5
+            ]
+          },
+          "normal": [
+            0,
+            -1,
+            0
+          ]
+        }
+      ],
+      "neutral": {
+        "normal": [
+          0,
+          0,
+          1
+        ],
+        "origin": [
+          40,
+          25,
+          25
+        ]
+      },
+      "of": "blend_16",
+      "pull": [
+        0,
+        0,
+        1
+      ]
+    },
+    "kernelError": "ops[18].faces this face selector matched NOTHING on a body with 43 face(s). Clause exclusions: normal rejected 41, bbox rejected 42. Closest candidates: #11003 (PLANE n=[0, 1, 0] at [40, 50, 12.5] area 1850) [1/2 clauses]; #11047 (PLANE n=[0, 1, 0] at [40, 2.5, 13.75] area 1687.5) [1/2 clauses]; #11054 (PLANE n=[0, -1, 0] at [40, 47.5, 13.75] area 1687.5) [1/2 clauses]; #10784 (CYLINDRICAL_SURFACE r=3 at [1.5, 1.5, 12.5] area 106.066~) [0/2 clauses]; #10826 (CYLINDRICAL_SURFACE r=3 at [78.5, 1.5, 12.5] area 106.066~) [0/2 clauses]; #10868 (CYLINDRICAL_SURFACE r=3 at [1.5, 48.5, 12.5] area 106.066~) [0/2 clauses]; #10910 (CYLINDRICAL_SURFACE r=3 at [78.5, 48.5, 12.5] area 106.066~) [0/2 clauses]; #10989 (PLANE n=[0, 0, -1] at [40, 25, 0] area 3982) [0/2 clauses]. A selector that matches nothing is refused rather than treated as an empty selection, because an empty selection builds a body the document did not ask for and reports success.",
+    "provenBy": "kernel-worker",
+    "report": {
+      "reasonCode": "selector-no-match",
+      "state": "error"
+    },
+    "documentRolledBack": true,
+    "keptFailed": false,
+    "reasonCode": "selector-no-match",
+    "reportBug": {
+      "tool": "cad_report_bug",
+      "args": {
+        "title": "cad_draft refused: ops[18].faces this face selector matched NOTHING on a body with 43 face(s). Clause exclusions: normal rejected 41, bbox rejected 42. Closest…",
+        "description": "cad_draft returned E_GEOMETRY (selector-no-match) on input I expected to work. Not in the capability-gap register. EDIT: say what you were building and why this should succeed.",
+        "tool": "cad_draft",
+        "severity": "major",
+        "steps": "Call cad_draft with {\"angle\":0.0174533,\"faces\":[{\"bbox\":{\"max\":[80.5,50,25],\"min\":[79.5,0,0]},\"normal\":[1,0,0]},{\"bbox\":{\"max\":[0.5,50,25],\"min\":[-0.5,0,0]},\"normal\":[-1,0,0]},{\"bbox\":{\"max\":[80,50.5,25],\"min\":[0,49.5,0]},\"normal\":[0,1,0]},{\"bbox\":{\"max\":[80,0.5,25],\"min\":[0,-0.5,0]},\"normal\":[0,-1,0]},{\"bbox\":{\"max\":[3,47.5,25],\"min\":[2,2.5,2.5]},\"normal\":[1,0,0]},{\"bbox\":{\"max\":[78,47.5,25],\"min\":[77,2.5,2.5]},\"normal\":[-1,0,0]},{\"bbox\":{\"max\":[77.5,48,25],\"min\":[2.5,47,2.5]},\"normal\":[0,1,0]},{\"bbox\":{\"max\":[77.5,3,25],\"min\":[2.5,2,2.5]},\"normal\":[0,-1,0]}],\"neutral\":{\"normal\":[0,0,1],\"origin\":[40,25,25]},\"of\":\"637c116b_solid_27\",\"pull\":[0,0,1]}. EDIT: the handle ids above are session-local — say how those bodies were built.",
+        "expected": "EDIT: what a mainstream CAD kernel would produce for this input.",
+        "actual": "E_GEOMETRY: ops[18].faces this face selector matched NOTHING on a body with 43 face(s). Clause exclusions: normal rejected 41, bbox rejected 42. Closest candidates: #11003 (PLANE n=[0, 1, 0] at [40, 50, 12.5] area 1850) [1/2 clauses]; #11047 (PLANE n=[0, 1, 0] at [40, 2.5, 13.75] area 1687.5) [1/2 clauses]; #11054 (PLANE n=[0, -1, 0] at [40, 47.5, 13.75] area 1687.5) [1/2 clauses]; #10784 (CYLINDRICAL_SURFACE r=3 at [1.5, 1.5, 12.5] area 106.066~) [0/2 clauses]; #10826 (CYLINDRICAL_SURFACE r=3 at [78.5, 1.5, 12.5] area 106.066~) [0/2 clauses]; #10868 (CYLINDRICAL_SURFACE r=3 at [1.5, 48.5, 12.5] area 106.066~) [0/2 clauses]; #10910 (CYLINDRICAL_SURFACE r=3 at [78.5, 48.5, 12.5] area 106.066~) [0/2 clauses]; #10989 (PLANE n=[0, 0, -1] at [40, 25, 0] area 3982) [0/2 clauses]. A selector that matches nothing is refused rather than treated as an empty selection, because an empty selection builds a body the document did not ask for and reports success."
+      }
+    }
+  },
+  "geometry": null,
+  "journal": {
+    "ops": 18,
+    "minimizedTo": 18
+  },
+  "minimized": {
+    "before": 18,
+    "after": 18,
+    "tests": 0,
+    "baselineMs": 0,
+    "skipped": "robustness/triage/minimize.js is not reachable from this install (MODULE_NOT_FOUND) — dumped unminimised"
+  },
+  "replay": {
+    "tool": "node tools/op_replay.js <dir>",
+    "cli": "node cli.js --run ops.json"
+  },
+  "privacy": "local only — this dump is never uploaded; see this module's header and docs/TELEMETRY.md"
+}

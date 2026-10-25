@@ -1,0 +1,98 @@
+{
+  "ticket": "CADSF-1071",
+  "ts": "2026-10-24T06:28:52.201Z",
+  "fingerprint": "7732c3d26b24",
+  "source": "tool",
+  "sourceContext": {
+    "origin": "test-suite",
+    "label": "mcp-harness",
+    "declared": true,
+    "declaredOrigin": null
+  },
+  "signature": {
+    "source": "tool",
+    "tool": "cad_draft",
+    "op": "draft",
+    "code": "E_GEOMETRY",
+    "reasonCode": "draft-face-surface-unsupported"
+  },
+  "message": "ops[20] (draft): draft: this selection mixes 12 face(s) of revolution (#12634, #12641, #12648, #12655, #12662, #12669, #12676, #12683, #11765, #11807, #11849, #11891) with 4 other face(s) — a planar draft and a revolved draft rebuild the body in different ways and cannot be run as one operation; draft them in two calls",
+  "details": {
+    "op": "draft",
+    "document": "637c116b_doc_2",
+    "args": {
+      "op": "draft",
+      "id": "draft_20",
+      "angle": 0.017453293,
+      "faces": [
+        "#12634",
+        "#12641",
+        "#12648",
+        "#12655",
+        "#12662",
+        "#12669",
+        "#12676",
+        "#12683",
+        "#11765",
+        "#11807",
+        "#11849",
+        "#11891",
+        "#11995",
+        "#12002",
+        "#12076",
+        "#12083"
+      ],
+      "neutral": {
+        "normal": [
+          0,
+          0,
+          1
+        ],
+        "origin": [
+          0,
+          0,
+          23
+        ]
+      },
+      "of": "draft_19"
+    },
+    "kernelError": "ops[20] (draft): draft: this selection mixes 12 face(s) of revolution (#12634, #12641, #12648, #12655, #12662, #12669, #12676, #12683, #11765, #11807, #11849, #11891) with 4 other face(s) — a planar draft and a revolved draft rebuild the body in different ways and cannot be run as one operation; draft them in two calls",
+    "provenBy": "kernel-worker",
+    "report": {
+      "reasonCode": "draft-face-surface-unsupported",
+      "state": "error"
+    },
+    "documentRolledBack": true,
+    "keptFailed": false,
+    "reasonCode": "draft-face-surface-unsupported",
+    "reportBug": {
+      "tool": "cad_report_bug",
+      "args": {
+        "title": "cad_draft refused: ops[20] (draft): draft: this selection mixes 12 face(s) of revolution (#12634, #12641, #12648, #12655, #12662, #12669, #12676, #12683, #1176…",
+        "description": "cad_draft returned E_GEOMETRY (draft-face-surface-unsupported) on input I expected to work. Not in the capability-gap register. EDIT: say what you were building and why this should succeed.",
+        "tool": "cad_draft",
+        "severity": "major",
+        "steps": "Call cad_draft with {\"angle\":0.017453293,\"faces\":[\"#12634\",\"#12641\",\"#12648\",\"#12655\",\"#12662\",\"#12669\",\"#12676\",\"#12683\",\"#11765\",\"#11807\",\"#11849\",\"#11891\",\"#11995\",\"#12002\",\"#12076\",\"#12083\"],\"neutral\":{\"normal\":[0,0,1],\"origin\":[0,0,23]},\"of\":\"637c116b_solid_30\"}. EDIT: the handle ids above are session-local — say how those bodies were built.",
+        "expected": "EDIT: what a mainstream CAD kernel would produce for this input.",
+        "actual": "E_GEOMETRY: ops[20] (draft): draft: this selection mixes 12 face(s) of revolution (#12634, #12641, #12648, #12655, #12662, #12669, #12676, #12683, #11765, #11807, #11849, #11891) with 4 other face(s) — a planar draft and a revolved draft rebuild the body in different ways and cannot be run as one operation; draft them in two calls"
+      }
+    }
+  },
+  "geometry": "body.step",
+  "journal": {
+    "ops": 20,
+    "minimizedTo": 20
+  },
+  "minimized": {
+    "before": 20,
+    "after": 20,
+    "tests": 0,
+    "baselineMs": 0,
+    "skipped": "robustness/triage/minimize.js is not reachable from this install (MODULE_NOT_FOUND) — dumped unminimised"
+  },
+  "replay": {
+    "tool": "node tools/op_replay.js <dir>",
+    "cli": "node cli.js --run ops.json"
+  },
+  "privacy": "local only — this dump is never uploaded; see this module's header and docs/TELEMETRY.md"
+}

@@ -1,0 +1,72 @@
+{
+  "ticket": "CADSF-1071",
+  "ts": "2026-10-24T07:21:06.669Z",
+  "fingerprint": "7ad6a87d496c",
+  "source": "tool",
+  "sourceContext": {
+    "origin": "test-suite",
+    "label": "mcp-harness",
+    "declared": true,
+    "declaredOrigin": null
+  },
+  "signature": {
+    "source": "tool",
+    "tool": "cad_frustum",
+    "op": "frustum",
+    "code": "E_TIMEOUT",
+    "reasonCode": "op-time-budget-exceeded"
+  },
+  "message": "\"frustum\" was cancelled after exceeding its time budget (1 ms, 69289 ms spent): the kernel worker was terminated to interrupt it — the op was still running with nothing left to poll",
+  "details": {
+    "op": "frustum",
+    "document": "637c116b_doc_3",
+    "args": {
+      "op": "frustum",
+      "id": "frustum_4",
+      "h": 19.7,
+      "origin": [
+        71,
+        41,
+        2.3
+      ],
+      "r0": 3.75,
+      "r1": 3.5
+    },
+    "reasonCode": "op-time-budget-exceeded",
+    "budgetMs": 1,
+    "elapsedMs": 69289,
+    "phase": null,
+    "documentRolledBack": true,
+    "sessionSurvives": true,
+    "kernelError": "the kernel worker was terminated to interrupt it — the op was still running with nothing left to poll",
+    "reportBug": {
+      "tool": "cad_report_bug",
+      "args": {
+        "title": "cad_frustum refused: \"frustum\" was cancelled after exceeding its time budget (1 ms, 69289 ms spent): the kernel worker was terminated to interrupt it — the op …",
+        "description": "cad_frustum returned E_TIMEOUT (op-time-budget-exceeded) on input I expected to work. Not in the capability-gap register. EDIT: say what you were building and why this should succeed.",
+        "tool": "cad_frustum",
+        "severity": "major",
+        "steps": "Call cad_frustum with {\"h\":19.7,\"origin\":[71,41,2.3],\"r0\":3.75,\"r1\":3.5}.",
+        "expected": "EDIT: what a mainstream CAD kernel would produce for this input.",
+        "actual": "E_TIMEOUT: \"frustum\" was cancelled after exceeding its time budget (1 ms, 69289 ms spent): the kernel worker was terminated to interrupt it — the op was still running with nothing left to poll"
+      }
+    }
+  },
+  "geometry": null,
+  "journal": {
+    "ops": 4,
+    "minimizedTo": 4
+  },
+  "minimized": {
+    "before": 4,
+    "after": 4,
+    "tests": 0,
+    "baselineMs": 0,
+    "skipped": "the refusal is E_TIMEOUT — a resource failure, not a geometric one; a replay here would reproduce the cost on the protocol thread rather than a refusal, so the journal is dumped unminimised (CADSB-1326)"
+  },
+  "replay": {
+    "tool": "node tools/op_replay.js <dir>",
+    "cli": "node cli.js --run ops.json"
+  },
+  "privacy": "local only — this dump is never uploaded; see this module's header and docs/TELEMETRY.md"
+}

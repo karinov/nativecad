@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kubus 40x40x40 dengan Lubang Silinder Dia 16 mm</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #14171c; }
+  html.light, html.light body { background: #eef1f5; }
+  canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+  canvas:active { cursor: grabbing; }
+  #hud { position: fixed; left: 12px; bottom: 10px; color: #8b98a9; font: 12px/1.5 system-ui, sans-serif;
+         user-select: none; pointer-events: none; max-width: 90vw; }
+  #hud b { color: #cfd8e3; font-weight: 600; }
+  /* CADSB-721: the id-list disclosure needs its own click target even though
+     the rest of the HUD ignores pointer events (so it never steals the
+     canvas drag/orbit gesture). */
+  #hud details, #hud summary { pointer-events: auto; }
+  #hud summary { cursor: pointer; display: inline; }
+  html.light #hud { color: #5c6875; }
+  html.light #hud b { color: #1d242c; }
+  /* CADSF-610 segmented display-mode control */
+  #modes { position: fixed; right: 12px; top: 10px; display: flex; background: #232a33; border: 1px solid #3a4450;
+           border-radius: 6px; overflow: hidden; font: 12px system-ui, sans-serif; }
+  #modes button { background: transparent; color: #8b98a9; border: 0; border-left: 1px solid #3a4450;
+                  padding: 6px 12px; cursor: pointer; font: inherit; }
+  #modes button:first-child { border-left: 0; }
+  #modes button:hover:not(:disabled) { background: #2d3641; color: #cfd8e3; }
+  #modes button[aria-pressed="true"] { background: #3d4a5a; color: #eaf1f8; }
+  #modes button:disabled { opacity: 0.35; cursor: not-allowed; }
+  html.light #modes { background: #ffffff; border-color: #c3ccd6; }
+  html.light #modes button { color: #5c6875; border-left-color: #c3ccd6; }
+  html.light #modes button[aria-pressed="true"] { background: #d7e0ea; color: #101519; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="hud"><b>Kubus 40x40x40 dengan Lubang Silinder Dia 16 mm</b> · 824 triangles · #403 · units mm<br>
+drag: orbit · wheel: zoom · keys 1-4: display mode · dependency-free viewer (no three.js)</div>
+<div id="modes" role="group" aria-label="display mode">
+<button type="button" data-mode="shaded" title="shaded solid (key 1)">shaded</button>
+<button type="button" data-mode="shaded+edges" title="shaded solid + B-rep edges (key 2)">shaded+edges</button>
+<button type="button" data-mode="hlr" title="hidden-line removed (key 3)">HLR</button>
+<button type="button" data-mode="wireframe" title="all edges, hidden ones included (key 4)">wireframe</button>
+</div>
+<script>
+// ── the SAME decoder cad_mesh_payload publishes as a resource, verbatim ──
+'use strict';
+/**
+ * packages/mcp/src/tools/output/meshPayloadDecoder.js — CADSF-397
+ *
+ * THE INVERSE OF ./meshPayload.js, and the file `cad_mesh_payload`'s consumer
+ * actually runs. It is shipped verbatim as the MCP resource
+ * `cadsolver://viewer/decode-mesh.js` (read straight off disk — see
+ * output/index.js), so the decoder an artifact pastes in and the decoder this
+ * package's tests run are THE SAME BYTES. A decoder documented in prose beside
+ * an encoder is a decoder that drifts; this one cannot, because
+ * test/cadsf-397.test.js round-trips real geometry through this exact file and
+ * the resource is `fs.readFileSync(__filename)`.
+ *
+ * Dual-mode on purpose: plain function declarations, no `require`, no
+ * top-level `await`, and the CommonJS export guarded at the bottom. Paste it
+ * into a browser <script> / a Claude artifact and `decodeMeshPayload` is
+ * simply in scope; `require()` it from Node and you get the same functions.
+ *
+ * Usage (three.js artifact):
+ *
+ *     const m = decodeMeshPayload(payload);           // payload = tool result
+ *     const g = new THREE.BufferGeometry();
+ *     g.setAttribute('position', new THREE.BufferAttribute(m.positions, 3));
+ *     if (m.normals) g.setAttribute('normal', new THREE.BufferAttribute(m.normals, 3));
+ *     g.setIndex(new THREE.BufferAttribute(m.indices, 1));
+ *     scene.add(new THREE.Mesh(g, new THREE.MeshStandardMaterial()));
+ *     camera.up.set(0, 0, 1);                         // payload.upAxis === '+Z'
+ *     camera.position.set(...m.camera.position);
+ *     camera.lookAt(...m.camera.target);
+ *
+ * Every buffer is little-endian, which is the only byte order any browser or
+ * Node platform this can run on actually uses (typed-array views take the
+ * host's order; there is no big-endian target left in practice).
+ *
+ * CADSF-416 (format cadsolver.mesh/2): `indices` may now be FACE-LOCAL
+ * (`indices.local: true`) — decodeIndices() reads `faces[]` to add each
+ * face's vertexStart back on. /1 payloads (no `local` key) decode exactly as
+ * before; this file reads both.
+ *
+ * CADSB-294 (format cadsolver.mesh/3): a payload MAY also carry `instances`
+ * — positions/normals/indices/faces/edges still decode to exactly ONE body
+ * (the prototype of a cad_pattern_copies result); `decoded.instances`, when
+ * present, is `[{solidId, translation:[x,y,z], quaternion:[x,y,z,w]}, ...]`,
+ * one entry per instance the pattern actually has (draw the SAME decoded
+ * geometry once per entry, placed by that entry's translation+quaternion —
+ * three.js: `mesh.position.fromArray(t); mesh.quaternion.fromArray(q)` per
+ * instance, or one row of an `InstancedMesh`'s matrix per entry). Code that
+ * does not read `decoded.instances` still gets one fully correct body.
+ */
+
+/** base64 -> Uint8Array. Uses atob in a browser, Buffer in Node. */
+function b64ToBytes(b64) {
+    if (typeof atob === 'function') {
+        const bin = atob(b64);
+        const out = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+        return out;
+    }
+    const buf = Buffer.from(b64, 'base64');
+    return new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength);
+}
+
+/** Copy into a fresh ArrayBuffer so typed-array views are always aligned. */
+function alignedBuffer(bytes) {
+    const copy = new Uint8Array(bytes.length);
+    copy.set(bytes);
+    return copy.buffer;
+}
+
+/**
+ * Decode a quantized (or float32) position buffer into a Float32Array of
+ * x,y,z triples: `p = origin + q * scale`, exactly the affine transform
+ * glTF's KHR_mesh_quantization carries on the node.
+ */
+function decodePositions(block) {
+    const bytes = b64ToBytes(block.base64);
+    if (block.encoding === 'float32') return new Float32Array(alignedBuffer(bytes));
+    const q = block.encoding === 'quantized-uint8'
+        ? new Uint8Array(alignedBuffer(bytes))
+        : new Uint16Array(alignedBuffer(bytes));
+    const out = new Float32Array(q.length);
+    const o = block.origin;
+    const s = block.scale;
+    for (let i = 0; i < q.length; i += 3) {
+        out[i] = o[0] + q[i] * s[0];
+        out[i + 1] = o[1] + q[i + 1] * s[1];
+        out[i + 2] = o[2] + q[i + 2] * s[2];
+    }
+    return out;
+}
+
+/**
+ * Octahedral unit-vector decode (Cigolle, Donow, Evangelakos, Mara, McGuire,
+ * Meyer — "A Survey of Efficient Representations for Independent Unit
+ * Vectors", JCGT 3(2), 2014 — the same scheme glTF's KHR_mesh_quantization
+ * and meshoptimizer use for 8-bit normals).
+ */
+function octDecode(a, b) {
+    let x = a / 127;
+    let y = b / 127;
+    const z = 1 - Math.abs(x) - Math.abs(y);
+    if (z < 0) {
+        const ox = (1 - Math.abs(y)) * (x >= 0 ? 1 : -1);
+        const oy = (1 - Math.abs(x)) * (y >= 0 ? 1 : -1);
+        x = ox;
+        y = oy;
+    }
+    const len = Math.sqrt(x * x + y * y + z * z) || 1;
+    return [x / len, y / len, z / len];
+}
+
+/** Decode a normal buffer into a Float32Array of x,y,z triples. */
+function decodeNormals(block) {
+    const bytes = b64ToBytes(block.base64);
+    if (block.encoding === 'float32') return new Float32Array(alignedBuffer(bytes));
+    const oct = new Int8Array(alignedBuffer(bytes));
+    const out = new Float32Array((oct.length / 2) * 3);
+    for (let i = 0, o = 0; i < oct.length; i += 2, o += 3) {
+        const n = octDecode(oct[i], oct[i + 1]);
+        out[o] = n[0];
+        out[o + 1] = n[1];
+        out[o + 2] = n[2];
+    }
+    return out;
+}
+
+/**
+ * Decode an index buffer into a Uint32Array (uint8/uint16 buffers are
+ * widened). CADSF-416: when `block.local` is true, the raw values are
+ * FACE-LOCAL (0-based within each face's own vertex range, see
+ * meshPayload.js's encodeIndicesLocal) — this walks `faces[]` and adds each
+ * face's `vertexStart` back on to recover ordinary global indices, so every
+ * OTHER caller of this function (three.js BufferGeometry.setIndex, a raw
+ * WebGL element array, …) sees exactly the same shape it always did,
+ * regardless of which payload version produced it.
+ */
+function decodeIndices(block, faces) {
+    const bytes = b64ToBytes(block.base64);
+    const raw = block.encoding === 'uint8'
+        ? new Uint32Array(new Uint8Array(alignedBuffer(bytes)))
+        : block.encoding === 'uint16'
+            ? new Uint32Array(new Uint16Array(alignedBuffer(bytes)))
+            : new Uint32Array(alignedBuffer(bytes));
+    if (!block.local || !faces || !faces.length) return raw;
+    const out = new Uint32Array(raw.length);
+    for (let f = 0; f < faces.length; f++) {
+        const face = faces[f];
+        const start = face.triangleStart * 3;
+        const end = start + face.triangleCount * 3;
+        for (let i = start; i < end; i++) out[i] = raw[i] + face.vertexStart;
+    }
+    return out;
+}
+
+/**
+ * CADSB-294: decode an `instances` block into one plain object per instance.
+ * `arr` is `count` rows of `stride` (7) float32 values: [tx,ty,tz,qx,qy,qz,qw].
+ */
+function decodeInstances(block) {
+    if (!block) return null;
+    const arr = new Float32Array(alignedBuffer(b64ToBytes(block.base64)));
+    const stride = block.stride || 7;
+    const out = new Array(block.count);
+    for (let i = 0; i < block.count; i++) {
+        const o = i * stride;
+        out[i] = {
+            solidId: (block.solidIds && block.solidIds[i]) || null,
+            translation: [arr[o], arr[o + 1], arr[o + 2]],
+            quaternion: [arr[o + 3], arr[o + 4], arr[o + 5], arr[o + 6]],
+        };
+    }
+    return out;
+}
+
+/**
+ * Decode the whole payload.
+ *
+ * @param {object} payload the `mesh` object a `cad_mesh_payload` call returns
+ * @returns {{positions: Float32Array, normals: Float32Array|null, indices: Uint32Array,
+ *            faces: Array, edges: {positions: Float32Array, offsets: Uint32Array}|null,
+ *            instances: {solidId:string, translation:number[], quaternion:number[]}[]|null,
+ *            bbox: object, center: number[], radius: number, camera: object,
+ *            units: string, upAxis: string}}
+ */
+function decodeMeshPayload(payload) {
+    if (!payload || !payload.positions || !payload.indices) {
+        throw new Error('decodeMeshPayload: not a cadsolver mesh payload (no positions/indices)');
+    }
+    let edges = null;
+    if (payload.edges) {
+        edges = {
+            positions: decodePositions(payload.edges),
+            offsets: new Uint32Array(alignedBuffer(b64ToBytes(payload.edges.offsets))),
+        };
+    }
+    return {
+        format: payload.format,
+        units: payload.units,
+        upAxis: payload.upAxis,
+        positions: decodePositions(payload.positions),
+        normals: payload.normals ? decodeNormals(payload.normals) : null,
+        indices: decodeIndices(payload.indices, payload.faces),
+        faces: payload.faces || [],
+        solidIds: payload.solidIds || [],
+        edges,
+        instances: payload.instances ? decodeInstances(payload.instances) : null,
+        bbox: payload.bbox,
+        center: payload.center,
+        radius: payload.radius,
+        camera: payload.camera,
+    };
+}
+
+/**
+ * Walk `edges` as polylines: `forEachEdgePolyline(decoded.edges, (pts) => …)`
+ * where `pts` is a Float32Array view of that one polyline's x,y,z points.
+ * (three.js: build a LineSegments/Line per polyline, or concatenate.)
+ */
+function forEachEdgePolyline(edges, fn) {
+    if (!edges) return;
+    for (let i = 0; i + 1 < edges.offsets.length; i++) {
+        const start = edges.offsets[i] * 3;
+        const end = edges.offsets[i + 1] * 3;
+        fn(edges.positions.subarray(start, end), i);
+    }
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        decodeMeshPayload, decodePositions, decodeNormals, decodeIndices, decodeInstances,
+        octDecode, b64ToBytes, forEachEdgePolyline,
+    };
+}
+
+</script>
+<script>
+'use strict';
+// ── embedded mesh payload (mesh/2 — see cadsolver://schema/mesh-payload) ──
+const PAYLOAD = {"format":"cadsolver.mesh/2","units":"mm","upAxis":"+Z","counts":{"vertices":560,"triangles":824,"faces":8,"edges":16},"solidIds":["#403"],"bbox":{"min":[0,0,0],"max":[40,40,40]},"center":[20,20,20],"radius":34.64101615137754,"camera":{"position":[74.87564452480783,-34.87564452480782,74.87564452480783],"target":[20,20,20],"up":[0,0,1],"fovDeg":45,"near":0.034641016151377546,"far":233.61146902056618},"positions":{"encoding":"quantized-uint16","bits":16,"origin":[0,0,0],"scale":[0.0006103608758678569,0.0006103608758678569,0.0006103608758678569],"maxErrorMm":0.00030518043793392844,"base64":"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J60imAAAkqpxnAAAk6d6oAAANKQ0pAAAeqCTpwAAcZySqgAAIpgnrQAAl5NNrwAA3I7+sAAA/Yk3sgAABIXzsgAABIUMTQAA/YnITQAA3I4BTwAAl5OyUAAAIpjYUgAAcZxtVQAAeqBsWAAANKTLWwAAk6eFXwAAkqqOYwAAJ63dZwAATa9obAAA/rAjcQAAN7ICdgAA87L7egAAAAAAAP////8AAP//AIDNTP//+3oMTf//AnbITf//I3EBT///aGyyUP//3WfYUv//jmNtVf//hV9sWP//y1vLW///bFiFX///bVWOY///2FLdZ///slBobP//AU8jcf//yE0Cdv//DE37ev//zUwAgP//AAD/////////////M7MAgP//87L7ev//N7ICdv///rAjcf//Ta9obP//J63dZ///kqqOY///k6eFX///NKTLW///eqBsWP//cZxtVf//IpjYUv//l5OyUP//3I4BT////YnITf//BIUMTf//AIAzs///BIXzsv///Yk3sv//3I7+sP//l5NNr///Ipgnrf//cZySqv//eqCTp///NKQ0pP//k6d6oP//kqpxnP//J60imP//Ta+Xk////rDcjv//N7L9if//87IEhf//DE0Ehf//yE39if//AU/cjv//slCXk///2FIimP//bVVxnP//bFh6oP//y1s0pP//hV+Tp///jmOSqv//3Wcnrf//aGxNr///I3H+sP//AnY3sv//+3rzsv//AAAAAAAA//8AAAAAAAAAAP////8AAP///////wAAAAD//wAA////////AAD/////AAAAAAAAAAAAAP//AAD//wAAAAD///////8AAAAA/////wAA//////////8AAP//"},"indices":{"encoding":"uint8","local":true,"base64":"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"},"normals":{"encoding":"oct8","base64":"gQCQ8YEAkPGM9ZbrnOWf4qbbptut1K/StM24ybrHwcHBwce6ybjNtNKv1K3bptum4p/lnOuW8ZD1jACBAIELjA+QFZYbnB6fJaYlpiytLq8ztDe4ObpAwUDBRsdIyUzNUdJT1FrbWtth4mTlautw8XT1fwB/AHf4d/h09Xf4autq62HiWttf4FPUVdZMzUzNRsdAwUTFObo7vDO0M7QsrSWmKqsenyChFZYVlguMAIEIifWM+InrluuW4p/bpuCh1K3Wq820zbTHusHBxby6x7zFtM20za3Uptur1p/ioeCW65brjPWQ8Zzlluuh4Jzlluuh4Kbbq9am26vWr9K0za/StM24ybzFuMm8xcHBxbzBwcW8ybjNtMm4zbTSr9ar0q/Wq9um4KHbpuCh5ZzrluWc65bxkPiJ8ZD4iQCBCIkAgQiJD5AVlg+QFZYbnCChG5wgoSWmKqslpiqrLq8ztC6vM7Q3uDu8N7g7vEDBRMVAwUTFSMlMzUjJTM1R0lXWUdJV1lrbX+Ba21/gZOVq62Tlautw8XDxfwBwD38AcA90C2oVZBthHlolWiVTLFEuTDNIN0Y5QD9APzlGN0gzTC5RLFMlWiVaHmEbZBVqD3ALdAB/AH/1dPFw62rlZOJh21rbWtRT0lHNTMlIx0bBQMFAujm4N7Qzry6tLKYlpiWfHpwblhWQD4wLgQCBAIkIiQiMC4kIlhWWFZ8epiWhIK0sqyq0M7QzujnBQLw7x0bFRM1MzUzUU9ta1lXiYeBf62rravV0AH/4dwt0CHcVahVqHmElWiBfLFMqVTNMM0w5RkA/O0RGOUQ7TDNMM1MsWiVVKmEeXyBqFWoVdAtwD2QbahVfIGQbahVfIFolVSpaJVUqUS5MM1EuTDNIN0Q7SDdEO0A/O0RAPztEN0gzTDdIM0wuUSpVLlEqVSVaIF8lWiBfG2QVahtkFWoPcAh3D3AIdwB/+HcAf/h38XDravFw62rlZOBf5WTgX9ta1lXbWtZV0lHNTNJRzUzJSMVEyUjFRMFAvDvBQLw7uDe0M7g3tDOvLqsqry6rKqYloSCmJaEgnBuWFZwblhWQD5APf39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/f39/fwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgQCBAIEAgQB/AH8AfwB/gQCBAIEAgQB/AH8AfwB/AA=="},"edges":{"encoding":"quantized-uint16","bits":16,"origin":[0,0,0],"scale":[0.0006103608758678569,0.0006103608758678569,0.0006103608758678569],"maxErrorMm":0.00030518043793392844,"base64":"AAAAAAAAAAD//wAAAAD//wAA/////wAA/////wAA//8AAAAA//8AAAAAAAAAAAAAzUwAgAAA0Uy7fgAA3Ux3fQAA8Uw0fAAADU3xegAAMU2ueQAAXU1teAAAkU0tdwAAzE3vdQAAEE6ydAAAW052cwAAr049cgAACk8GcQAAbE/RbwAA10+fbgAASFBvbQAAwlBCbAAAQlEZawAAylHyaQAAWlLPaAAA8FKwZwAAjlOVZgAAMlR9ZQAA3VRqZAAAj1VbYwAASFZRYgAAB1dLYQAAzVdKYAAAmVhOXwAAa1lXXgAAQ1plXQAAIVt5XAAABVySWwAA7lyxWgAA3V3WWQAA0l4BWQAAy18yWAAAymBpVwAAzWGnVgAA1WLrVQAA4mM1VQAA82SHVAAACWbfUwAAImc+UwAAP2ikUgAAYGkRUgAAhWqGUQAArWsBUQAA2GyEUAAABm4PUAAAN2+hTwAAa3A6TwAAoXHbTgAA2XKETgAAFHQ1TgAAUHXtTQAAjnatTQAAzXd2TQAADnlGTQAAT3oeTQAAknv+TAAA1XzmTAAAGX7WTAAAXX/OTAAAooDOTAAA5oHWTAAAKoPmTAAAbYT+TAAAsIUeTQAA8YZGTQAAMoh2TQAAcYmtTQAAr4rtTQAA64s1TgAAJo2ETgAAXo7bTgAAlI86TwAAyJChTwAA+ZEPUAAAJ5OEUAAAUpQBUQAAepWGUQAAn5YRUgAAwJekUgAA3Zg+UwAA9pnfUwAADJuHVAAAHZw1VQAAKp3rVQAAMp6nVgAANZ9pVwAANKAyWAAALaEBWQAAIqLWWQAAEaOxWgAA+qOSWwAA3qR5XAAAvKVlXQAAlKZXXgAAZqdOXwAAMqhKYAAA+KhLYQAAt6lRYgAAcKpbYwAAIqtqZAAAzat9ZQAAcayVZgAAD62wZwAApa3PaAAANa7yaQAAva4ZawAAPa9CbAAAt69vbQAAKLCfbgAAk7DRbwAA9bAGcQAAULE9cgAApLF2cwAA77GydAAAM7LvdQAAbrItdwAAorJteAAAzrKueQAA8rLxegAADrM0fAAAIrN3fQAALrO7fgAAM7P/fwAAM7MAgAAAM7MAgAAALrNEgQAAIrOIggAADrPLgwAA8rIOhQAAzrJRhgAAorKShwAAbrLSiAAAM7IQigAA77FNiwAApLGJjAAAULHCjQAA9bD5jgAAk7AukAAAKLBgkQAAt6+QkgAAPa+9kwAAva7mlAAANa4NlgAApa0wlwAAD61PmAAAcaxqmQAAzauCmgAAIquVmwAAcKqknAAAt6munQAA+Ki0ngAAMqi1nwAAZqexoAAAlKaooQAAvKWaogAA3qSGowAA+qNtpAAAEaNOpQAAIqIppgAALaH+pgAANKDNpwAANZ+WqAAAMp5YqQAAKp0UqgAAHZzKqgAADJt4qwAA9pkgrAAA3ZjBrAAAwJdbrQAAn5burQAAepV5rgAAUpT+rgAAJ5N7rwAA+ZHwrwAAyJBesAAAlI/FsAAAXo4ksQAAJo17sQAA64vKsQAAr4oSsgAAcYlSsgAAMoiJsgAA8Ya5sgAAsIXhsgAAbYQBswAAKoMZswAA5oEpswAAooAxswAAXX8xswAAGX4pswAA1XwZswAAknsBswAAT3rhsgAADnm5sgAAzXeJsgAAjnZSsgAAUHUSsgAAFHTKsQAA2XJ7sQAAoXEksQAAa3DFsAAAN29esAAABm7wrwAA2Gx7rwAArWv+rgAAhWp5rgAAYGnurQAAP2hbrQAAImfBrAAACWYgrAAA82R4qwAA4mPKqgAA1WIUqgAAzWFYqQAAymCWqAAAy1/NpwAA0l7+pgAA3V0ppgAA7lxOpQAABVxtpAAAIVuGowAAQ1qaogAAa1mooQAAmVixoAAAzVe1nwAAB1e0ngAASFaunQAAj1WknAAA3VSVmwAAMlSCmgAAjlNqmQAA8FJPmAAAWlIwlwAAylENlgAAQlHmlAAAwlC9kwAASFCQkgAA109gkQAAbE8ukAAACk/5jgAAr07CjQAAW06JjAAAEE5NiwAAzE0QigAAkU3SiAAAXU2ShwAAMU1RhgAADU0OhQAA8UzLgwAA3UyIggAA0UxEgQAAzUwAgAAAzUwAgAAAAAAAAP////8AAP////8AAP//////////////////AAD/////AAD/////AAAAAP//M7MAgP//M7P/f///LrO7fv//IrN3ff//DrM0fP//8rLxev//zrKuef//orJteP//brItd///M7Lvdf//77GydP//pLF2c///ULE9cv//9bAGcf//k7DRb///KLCfbv//t69vbf//Pa9CbP//va4Za///Na7yaf//pa3PaP//D62wZ///cayVZv//zat9Zf//IqtqZP//cKpbY///t6lRYv//+KhLYf//MqhKYP//ZqdOX///lKZXXv//vKVlXf//3qR5XP//+qOSW///EaOxWv//IqLWWf//LaEBWf//NKAyWP//NZ9pV///Mp6nVv//Kp3rVf//HZw1Vf//DJuHVP//9pnfU///3Zg+U///wJekUv//n5YRUv//epWGUf//UpQBUf//J5OEUP//+ZEPUP//yJChT///lI86T///Xo7bTv//Jo2ETv//64s1Tv//r4rtTf//cYmtTf//Moh2Tf//8YZGTf//sIUeTf//bYT+TP//KoPmTP//5oHWTP//ooDOTP//XX/OTP//GX7WTP//1XzmTP//knv+TP//T3oeTf//DnlGTf//zXd2Tf//jnatTf//UHXtTf//FHQ1Tv//2XKETv//oXHbTv//a3A6T///N2+hT///Bm4PUP//2GyEUP//rWsBUf//hWqGUf//YGkRUv//P2ikUv//Imc+U///CWbfU///82SHVP//4mM1Vf//1WLrVf//zWGnVv//ymBpV///y18yWP//0l4BWf//3V3WWf//7lyxWv//BVySW///IVt5XP//Q1plXf//a1lXXv//mVhOX///zVdKYP//B1dLYf//SFZRYv//j1VbY///3VRqZP//MlR9Zf//jlOVZv//8FKwZ///WlLPaP//ylHyaf//QlEZa///wlBCbP//SFBvbf//10+fbv//bE/Rb///Ck8Gcf//r049cv//W052c///EE6ydP//zE3vdf//kU0td///XU1teP//MU2uef//DU3xev//8Uw0fP//3Ux3ff//0Uy7fv//zUwAgP//zUwAgP//zUwAgP//0UxEgf//3UyIgv//8UzLg///DU0Ohf//MU1Rhv//XU2Sh///kU3SiP//zE0Qiv//EE5Ni///W06JjP//r07Cjf//Ck/5jv//bE8ukP//109gkf//SFCQkv//wlC9k///QlHmlP//ylENlv//WlIwl///8FJPmP//jlNqmf//MlSCmv//3VSVm///j1WknP//SFaunf//B1e0nv//zVe1n///mVixoP//a1moof//Q1qaov//IVuGo///BVxtpP//7lxOpf//3V0ppv//0l7+pv//y1/Np///ymCWqP//zWFYqf//1WIUqv//4mPKqv//82R4q///CWYgrP//ImfBrP//P2hbrf//YGnurf//hWp5rv//rWv+rv//2Gx7r///Bm7wr///N29esP//a3DFsP//oXEksf//2XJ7sf//FHTKsf//UHUSsv//jnZSsv//zXeJsv//Dnm5sv//T3rhsv//knsBs///1XwZs///GX4ps///XX8xs///ooAxs///5oEps///KoMZs///bYQBs///sIXhsv//8Ya5sv//MoiJsv//cYlSsv//r4oSsv//64vKsf//Jo17sf//Xo4ksf//lI/FsP//yJBesP//+ZHwr///J5N7r///UpT+rv//epV5rv//n5burf//wJdbrf//3ZjBrP//9pkgrP//DJt4q///HZzKqv//Kp0Uqv//Mp5Yqf//NZ+WqP//NKDNp///LaH+pv//IqIppv//EaNOpf//+qNtpP//3qSGo///vKWaov//lKaoof//ZqexoP//Mqi1n///+Ki0nv//t6munf//cKqknP//IquVm///zauCmv//caxqmf//D61PmP//pa0wl///Na4Nlv//va7mlP//Pa+9k///t6+Qkv//KLBgkf//k7AukP//9bD5jv//ULHCjf//pLGJjP//77FNi///M7IQiv//brLSiP//orKSh///zrJRhv//8rIOhf//DrPLg///IrOIgv//LrNEgf//M7MAgP////8AAAAA//8AAP//AAAAAP//AAAAAAAAAAD//wAAAAD//////////////////wAA","polylineCount":16,"pointCount":540,"offsets":"AAAAAAIAAAAEAAAABgAAAAgAAACJAAAACgEAAAwBAAAOAQAAEAEAABIBAACTAQAAFAIAABYCAAAYAgAAGgIAABwCAAA="},"faces":[{"id":"#394","triangleStart":0,"triangleCount":340,"vertexStart":0,"vertexCount":204},{"id":"#401","triangleStart":340,"triangleCount":340,"vertexStart":204,"vertexCount":204},{"id":"#382","triangleStart":680,"triangleCount":68,"vertexStart":408,"vertexCount":68},{"id":"#387","triangleStart":748,"triangleCount":68,"vertexStart":476,"vertexCount":68},{"id":"#83","triangleStart":816,"triangleCount":2,"vertexStart":544,"vertexCount":4},{"id":"#105","triangleStart":818,"triangleCount":2,"vertexStart":548,"vertexCount":4},{"id":"#127","triangleStart":820,"triangleCount":2,"vertexStart":552,"vertexCount":4},{"id":"#139","triangleStart":822,"triangleCount":2,"vertexStart":556,"vertexCount":4}],"bytes":{"positions":4480,"normals":1496,"indices":3296,"edges":4412,"total":15409}};
+const mesh = decodeMeshPayload(PAYLOAD);
+
+// ── minimal mat4/vec helpers — no gl-matrix, no dependency at all ─────────
+function perspective(fovyRad, aspect, near, far) {
+    const f = 1 / Math.tan(fovyRad / 2);
+    const nf = 1 / (near - far);
+    return [
+        f / aspect, 0, 0, 0,
+        0, f, 0, 0,
+        0, 0, (far + near) * nf, -1,
+        0, 0, 2 * far * near * nf, 0,
+    ];
+}
+function lookAt(eye, target, up) {
+    let zx = eye[0] - target[0], zy = eye[1] - target[1], zz = eye[2] - target[2];
+    let zl = Math.hypot(zx, zy, zz) || 1; zx /= zl; zy /= zl; zz /= zl;
+    let xx = up[1] * zz - up[2] * zy, xy = up[2] * zx - up[0] * zz, xz = up[0] * zy - up[1] * zx;
+    let xl = Math.hypot(xx, xy, xz) || 1; xx /= xl; xy /= xl; xz /= xl;
+    const yx = zy * xz - zz * xy, yy = zz * xx - zx * xz, yz = zx * xy - zy * xx;
+    return [
+        xx, yx, zx, 0,
+        xy, yy, zy, 0,
+        xz, yz, zz, 0,
+        -(xx * eye[0] + xy * eye[1] + xz * eye[2]),
+        -(yx * eye[0] + yy * eye[1] + yz * eye[2]),
+        -(zx * eye[0] + zy * eye[1] + zz * eye[2]), 1,
+    ];
+}
+function multiply(a, b) {
+    const out = new Array(16);
+    for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < 4; j++) {
+            let s = 0;
+            for (let k = 0; k < 4; k++) s += a[k * 4 + j] * b[i * 4 + k];
+            out[i * 4 + j] = s;
+        }
+    }
+    return out;
+}
+
+// ── canvas + WebGL context (WebGL2 first, WebGL1 + uint32-index ext next) ─
+const canvas = document.getElementById('c');
+let gl = canvas.getContext('webgl2');
+let indexType;
+if (gl) {
+    indexType = gl.UNSIGNED_INT;
+} else {
+    gl = canvas.getContext('webgl');
+    gl.getExtension('OES_element_index_uint');
+    indexType = gl.UNSIGNED_INT;
+}
+
+const VERT_SRC = 'attribute vec3 aPosition; attribute vec3 aNormal;'
+    + 'uniform mat4 uModelViewProjection; uniform mat4 uModelView;'
+    + 'varying vec3 vNormal; varying vec3 vViewPos;'
+    + 'void main() {'
+    + '  vNormal = mat3(uModelView) * aNormal;'
+    + '  vec4 viewPos = uModelView * vec4(aPosition, 1.0);'
+    + '  vViewPos = viewPos.xyz;'
+    + '  gl_Position = uModelViewProjection * vec4(aPosition, 1.0);'
+    + '}';
+// Headlamp shading: the light travels WITH the camera (light dir = -viewPos,
+// i.e. from the fragment back to the eye at the view-space origin), so the
+// part always looks lit from wherever you are orbiting to, with no light
+// uniform to keep in sync with the camera controls.
+const FRAG_SRC = 'precision mediump float; varying vec3 vNormal; varying vec3 vViewPos;'
+    + 'uniform vec3 uColor;'
+    + 'void main() {'
+    + '  vec3 N = normalize(vNormal);'
+    + '  vec3 L = normalize(-vViewPos);'
+    + '  float diff = max(dot(N, L), 0.0);'
+    + '  gl_FragColor = vec4(uColor * 0.35 + uColor * diff * 0.75, 1.0);'
+    + '}';
+
+function compile(type, src) {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+    return s;
+}
+const program = gl.createProgram();
+gl.attachShader(program, compile(gl.VERTEX_SHADER, VERT_SRC));
+gl.attachShader(program, compile(gl.FRAGMENT_SHADER, FRAG_SRC));
+gl.linkProgram(program);
+if (!gl.getProgramParameter(program, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(program));
+gl.useProgram(program);
+
+const aPosition = gl.getAttribLocation(program, 'aPosition');
+const aNormal = gl.getAttribLocation(program, 'aNormal');
+const uMVP = gl.getUniformLocation(program, 'uModelViewProjection');
+const uMV = gl.getUniformLocation(program, 'uModelView');
+const uColor = gl.getUniformLocation(program, 'uColor');
+
+const posBuf = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+gl.bufferData(gl.ARRAY_BUFFER, mesh.positions, gl.STATIC_DRAW);
+
+// Flat per-vertex normals if the payload omitted them (normals:"none").
+const normalSource = mesh.normals || new Float32Array(mesh.positions.length).fill(0);
+if (!mesh.normals) for (let i = 2; i < normalSource.length; i += 3) normalSource[i] = 1; // +Z fallback
+const normBuf = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, normBuf);
+gl.bufferData(gl.ARRAY_BUFFER, normalSource, gl.STATIC_DRAW);
+
+const idxBuf = gl.createBuffer();
+gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, idxBuf);
+gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, mesh.indices, gl.STATIC_DRAW);
+
+// CADSF-848: contiguous same-colour triangle runs off the payload's own face
+// partition (faces[] are contiguous triangle ranges — splitByFace's
+// invariant), merged so a 495-gold-face part is a handful of draw calls, not
+// 495. A face without a colour draws in the default body colour, and a
+// payload with no coloured face at all keeps the single-draw path below.
+const DEFAULT_BODY_COLOUR = [0.30, 0.64, 0.83];
+const INDEX_BYTES = 4; // decodeIndices always hands back Uint32Array
+const colourRuns = (() => {
+    const faces = mesh.faces || [];
+    if (!faces.some((f) => f.colour)) return null;
+    const runs = [];
+    for (const f of faces) {
+        const c = f.colour || null;
+        const last = runs.length ? runs[runs.length - 1] : null;
+        if (last && String(last.c) === String(c)) { last.count += f.triangleCount * 3; continue; }
+        runs.push({ c, start: f.triangleStart * 3, count: f.triangleCount * 3 });
+    }
+    return runs;
+})();
+
+// B-rep edge overlay, flattened to a plain LINES vertex buffer (segment
+// pairs) once at load time — the same real STEP-curve polylines
+// cad_mesh_payload carries, not a triangle-boundary wireframe.
+let edgeBuf = null, edgeCount = 0;
+if (mesh.edges) {
+    const segs = [];
+    forEachEdgePolyline(mesh.edges, (pts) => {
+        for (let i = 0; i + 3 < pts.length; i += 3) {
+            segs.push(pts[i], pts[i + 1], pts[i + 2], pts[i + 3], pts[i + 4], pts[i + 5]);
+        }
+    });
+    if (segs.length) {
+        edgeCount = segs.length / 3;
+        edgeBuf = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, edgeBuf);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(segs), gl.STATIC_DRAW);
+    }
+}
+
+gl.enable(gl.DEPTH_TEST);
+
+// ── CADSF-610: display modes ─────────────────────────────────────────────
+// Each mode is (does the solid paint colour?) x (does the solid still write
+// depth?) x (are edges drawn, and do they respect that depth?). "hlr" is the
+// interesting one: solid:'depth' means colorMask is OFF for the solid pass,
+// so it contributes occlusion and nothing else, and the edge pass that
+// follows is hidden-line-removed by the z-buffer itself.
+const MODES = {
+    'shaded':       { solid: 'shade', edges: false, edgeDepth: true,  bg: [0x14, 0x17, 0x1c], edge: [0.11, 0.15, 0.19] },
+    'shaded+edges': { solid: 'shade', edges: true,  edgeDepth: true,  bg: [0x14, 0x17, 0x1c], edge: [0.07, 0.10, 0.13] },
+    'hlr':          { solid: 'depth', edges: true,  edgeDepth: true,  bg: [0xee, 0xf1, 0xf5], edge: [0.06, 0.09, 0.12] },
+    'wireframe':    { solid: 'none',  edges: true,  edgeDepth: false, bg: [0x14, 0x17, 0x1c], edge: [0.85, 0.88, 0.91] },
+};
+let mode = "shaded+edges";
+
+// ── orbit camera, seeded from the payload's own suggested framing ─────────
+const target = mesh.center;
+const up = mesh.camera.up;
+let eye = mesh.camera.position.slice();
+let rel = [eye[0] - target[0], eye[1] - target[1], eye[2] - target[2]];
+let radius = Math.hypot(rel[0], rel[1], rel[2]) || 1;
+let theta = Math.atan2(rel[1], rel[0]);
+let phi = Math.acos(Math.max(-1, Math.min(1, rel[2] / radius)));
+
+function eyeFromSpherical() {
+    return [
+        target[0] + radius * Math.sin(phi) * Math.cos(theta),
+        target[1] + radius * Math.sin(phi) * Math.sin(theta),
+        target[2] + radius * Math.cos(phi),
+    ];
+}
+
+let dragging = false, lastX = 0, lastY = 0;
+canvas.addEventListener('pointerdown', (e) => { dragging = true; lastX = e.clientX; lastY = e.clientY; canvas.setPointerCapture(e.pointerId); });
+canvas.addEventListener('pointerup', () => { dragging = false; });
+canvas.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    const dx = e.clientX - lastX, dy = e.clientY - lastY;
+    lastX = e.clientX; lastY = e.clientY;
+    theta -= dx * 0.01;
+    phi = Math.max(0.02, Math.min(Math.PI - 0.02, phi - dy * 0.01));
+});
+canvas.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    radius = Math.max(mesh.radius * 0.05, Math.min(mesh.radius * 30, radius * (1 + e.deltaY * 0.001)));
+}, { passive: false });
+
+// ── mode control: buttons + keys 1-4 ─────────────────────────────────────
+// Without edge polylines in the payload there is nothing for "hlr" or
+// "wireframe" to draw, so those two are disabled rather than offered as an
+// empty canvas — and a build-time display of either falls back to "shaded".
+const modeButtons = Array.prototype.slice.call(document.querySelectorAll('#modes button'));
+const MODE_ORDER = modeButtons.map((b) => b.dataset.mode);
+const edgesAvailable = !!edgeBuf;
+if (!edgesAvailable) {
+    modeButtons.forEach((b) => { if (MODES[b.dataset.mode].edges) b.disabled = true; });
+    if (MODES[mode].edges) mode = 'shaded';
+}
+function setMode(next) {
+    if (!MODES[next] || (!edgesAvailable && MODES[next].edges)) return;
+    mode = next;
+    modeButtons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
+    // The page chrome (HUD, control) has to follow the render background, or
+    // the HLR sheet gets grey-on-white labels.
+    document.documentElement.classList.toggle('light', MODES[mode].bg[0] > 128);
+}
+modeButtons.forEach((b) => b.addEventListener('click', () => setMode(b.dataset.mode)));
+addEventListener('keydown', (e) => {
+    const i = MODE_ORDER.indexOf(mode);
+    if (e.key >= '1' && e.key <= String(MODE_ORDER.length)) setMode(MODE_ORDER[Number(e.key) - 1]);
+    else if (e.key === 'm' || e.key === 'M') setMode(MODE_ORDER[(i + 1) % MODE_ORDER.length]);
+});
+setMode(mode);
+
+function resize() {
+    const w = innerWidth, h = innerHeight;
+    canvas.width = w * devicePixelRatio;
+    canvas.height = h * devicePixelRatio;
+    gl.viewport(0, 0, canvas.width, canvas.height);
+}
+addEventListener('resize', resize);
+resize();
+
+function frame() {
+    requestAnimationFrame(frame);
+    const M = MODES[mode];
+    gl.clearColor(M.bg[0] / 255, M.bg[1] / 255, M.bg[2] / 255, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    eye = eyeFromSpherical();
+    const aspect = canvas.width / canvas.height;
+    const proj = perspective((mesh.camera.fovDeg || 45) * Math.PI / 180, aspect, Math.max(radius * 0.01, mesh.camera.near || 0.1), (mesh.camera.far || radius * 10) + radius * 20);
+    const view = lookAt(eye, target, up);
+    const mvp = multiply(proj, view);
+
+    if (M.solid !== 'none') {
+        // 'depth': paint no colour, only occlusion — that is what turns the
+        // edge pass below into hidden-line removal.
+        if (M.solid === 'depth') gl.colorMask(false, false, false, false);
+        // Push the filled triangles a hair away from the eye so the edge
+        // lines that lie exactly ON them win the depth test cleanly instead
+        // of stitching in and out as the part rotates.
+        if (M.edges) { gl.enable(gl.POLYGON_OFFSET_FILL); gl.polygonOffset(1.0, 1.0); }
+        gl.useProgram(program);
+        gl.uniformMatrix4fv(uMVP, false, mvp);
+        gl.uniformMatrix4fv(uMV, false, view);
+        gl.uniform3f(uColor, 0.30, 0.64, 0.83);
+        gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+        gl.enableVertexAttribArray(aPosition);
+        gl.vertexAttribPointer(aPosition, 3, gl.FLOAT, false, 0, 0);
+        gl.bindBuffer(gl.ARRAY_BUFFER, normBuf);
+        gl.enableVertexAttribArray(aNormal);
+        gl.vertexAttribPointer(aNormal, 3, gl.FLOAT, false, 0, 0);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, idxBuf);
+        if (colourRuns && M.solid === 'shade') {
+            // CADSF-848: one draw per same-colour run, uColor per run — the
+            // depth-only HLR pass below never paints, so it keeps one draw.
+            for (const r of colourRuns) {
+                const c = r.c || DEFAULT_BODY_COLOUR;
+                gl.uniform3f(uColor, c[0], c[1], c[2]);
+                gl.drawElements(gl.TRIANGLES, r.count, indexType, r.start * INDEX_BYTES);
+            }
+        } else {
+            gl.drawElements(gl.TRIANGLES, mesh.indices.length, indexType, 0);
+        }
+        if (M.edges) gl.disable(gl.POLYGON_OFFSET_FILL);
+        if (M.solid === 'depth') gl.colorMask(true, true, true, true);
+    }
+
+    if (edgeBuf && M.edges) {
+        // wireframe = the same edge buffer with the depth test OFF, so the
+        // far side of the part shows through. Everything else keeps it on.
+        if (!M.edgeDepth) gl.disable(gl.DEPTH_TEST);
+        gl.useProgram(program);
+        gl.uniformMatrix4fv(uMVP, false, mvp);
+        gl.uniformMatrix4fv(uMV, false, view);
+        gl.uniform3f(uColor, M.edge[0], M.edge[1], M.edge[2]);
+        gl.bindBuffer(gl.ARRAY_BUFFER, edgeBuf);
+        gl.enableVertexAttribArray(aPosition);
+        gl.vertexAttribPointer(aPosition, 3, gl.FLOAT, false, 0, 0);
+        gl.disableVertexAttribArray(aNormal);
+        gl.vertexAttrib3f(aNormal, 0, 0, 1);
+        gl.drawArrays(gl.LINES, 0, edgeCount);
+        if (!M.edgeDepth) gl.enable(gl.DEPTH_TEST);
+    }
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
